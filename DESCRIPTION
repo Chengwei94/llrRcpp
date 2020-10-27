@@ -12,3 +12,5 @@ Encoding: UTF-8
 Imports: Rcpp, dplyr
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.1.1
+Suggests: 
+    testthat
