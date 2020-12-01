@@ -10,7 +10,7 @@
 #' @param N_min number of points stored in the leaf of the tree (only works for approx)
 #' 
 #' @export 
-bw_cv <- function(XY, method = c('approx', 'exact'), kernel = 'epanechnikov',
+bw.gcv <- function(XY, method = c('approx', 'exact'), kernel = 'epanechnikov',
                       epsilon = 0.05, bw, N_min = 1){
   
   method <- match.arg(method) 

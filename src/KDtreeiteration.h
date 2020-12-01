@@ -14,47 +14,47 @@ template<typename T>
 std::ostream& operator<<(std::ostream&, const std::vector<T>&); 
 
 class kdnode{ 
-            public: 
-                int n_below; 
-                int split_d; 
-                double split_v;
-                Eigen::MatrixXd XtX; 
-                Eigen::VectorXd XtY; 
-                std::vector<double> dim_max; 
-                std::vector<double> dim_min;
-                std::shared_ptr<kdnode> right_child; 
-                std::shared_ptr<kdnode> left_child; 
-                double sumY; 
-
-                kdnode(); // constructor 
-                kdnode(kdnode&&) ;  //move 
-                ~kdnode();  // destructor    
+public: 
+    int n_below; 
+    int split_d; 
+    double split_v;
+    Eigen::MatrixXd XtX; 
+    Eigen::VectorXd XtY; 
+    std::vector<double> dim_max; 
+    std::vector<double> dim_min;
+    std::shared_ptr<kdnode> right_child; 
+    std::shared_ptr<kdnode> left_child; 
+    double sumY; 
+    
+    kdnode(); // constructor 
+    kdnode(kdnode&&) ;  //move 
+    ~kdnode();  // destructor    
 };
 
 class kdtree{
-    public:     
-        kdtree(); 
-        ~kdtree();  
-        std::shared_ptr<kdnode> root; 
-        std::shared_ptr<kdnode> build_tree(all_point_t::iterator, all_point_t::iterator, int, double, int, size_t, std::vector<double>, std::vector<double>);
-        std::shared_ptr<kdnode> build_exacttree(all_point_t::iterator, all_point_t::iterator, int, double, int, size_t, std::vector<double>, std::vector<double>);
-        explicit kdtree(all_point_t XY_arr, int N_min); 
-        std::pair<Eigen::MatrixXd, Eigen::VectorXd> get_XtXXtY(const Eigen::VectorXd& X_query, std::vector<double> dim_max, std::vector<double> dim_min, std::shared_ptr<kdnode>& root, const Eigen::VectorXd& h, int kcode);
-        std::pair<Eigen::MatrixXd, Eigen::VectorXd> getapprox_XtXXtY(const Eigen::VectorXd& X_query, std::vector<double> dim_max, std::vector<double> dim_min, std::shared_ptr<kdnode>& root, double epsilon, const Eigen::VectorXd& h, int kcode);
-        std::pair<Eigen::MatrixXd, Eigen::VectorXd> find_XtXXtY(const Eigen::VectorXd& X_query, int method, double epsilon, const Eigen::VectorXd& h, int kcode);
+public:     
+    kdtree(); 
+    ~kdtree();  
+    std::shared_ptr<kdnode> root; 
+    std::shared_ptr<kdnode> build_tree(all_point_t::iterator, all_point_t::iterator, int, double, int, size_t, std::vector<double>, std::vector<double>);
+    std::shared_ptr<kdnode> build_exacttree(all_point_t::iterator, all_point_t::iterator, int, double, int, size_t, std::vector<double>, std::vector<double>);
+    explicit kdtree(all_point_t XY_arr, int N_min); 
+    std::pair<Eigen::MatrixXd, Eigen::VectorXd> get_XtXXtY(const Eigen::VectorXd& X_query, std::vector<double> dim_max, std::vector<double> dim_min, std::shared_ptr<kdnode>& root, const Eigen::VectorXd& h, int kcode);
+    std::pair<Eigen::MatrixXd, Eigen::VectorXd> getapprox_XtXXtY(const Eigen::VectorXd& X_query, std::vector<double> dim_max, std::vector<double> dim_min, std::shared_ptr<kdnode>& root, double epsilon, const Eigen::VectorXd& h, int kcode);
+    std::pair<Eigen::MatrixXd, Eigen::VectorXd> find_XtXXtY(const Eigen::VectorXd& X_query, int method, double epsilon, const Eigen::VectorXd& h, int kcode);
 };
 
 class Timer
 {
-    public:
-        Timer();
-        void reset();
-        double elapsed() const;
-
-    private:
-        typedef std::chrono::high_resolution_clock clock_;
-        typedef std::chrono::duration<double, std::ratio<1> > second_;
-        std::chrono::time_point<clock_> beg_;
+public:
+    Timer();
+    void reset();
+    double elapsed() const;
+    
+private:
+    typedef std::chrono::high_resolution_clock clock_;
+    typedef std::chrono::duration<double, std::ratio<1> > second_;
+    std::chrono::time_point<clock_> beg_;
 };
 
 
@@ -71,8 +71,13 @@ double max_weight(int kcode, const Eigen::VectorXd&h);
 
 // R function
 Eigen::VectorXd loclin(const Eigen::MatrixXd& XY_mat, int method, int kcode, 
-                        double epsilon, const Eigen::VectorXd& h, int N_min);
+                       double epsilon, const Eigen::VectorXd& h, int N_min);
 Eigen::VectorXd bw_loocv(const Eigen::MatrixXd& XY_mat, int method, int kcode, double epsilon, 
                          const Eigen::MatrixXd& bw, int N_min);
 Eigen::VectorXd predict(const Eigen::MatrixXd& XY_mat, const Eigen::MatrixXd& X_mat, int method, int kcode, 
                         double epsilon, const Eigen::VectorXd& h,  int N_min);
+Eigen::VectorXd predict1d(const Eigen::MatrixXd& XY_mat, Eigen::VectorXd& X_pred, int kcode,
+                          double h);
+Eigen::VectorXd bin1d(const Eigen::VectorXd &X, const Eigen::VectorXd &Y, const Eigen::VectorXd& X_pred, int kcode, double h, int bins);
+Eigen::VectorXd predict1dd (const Eigen::VectorXd &X, const Eigen::VectorXd &Y, const Eigen::VectorXd& X_pred, int kcode, double h);
+    

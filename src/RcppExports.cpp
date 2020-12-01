@@ -6,6 +6,66 @@
 
 using namespace Rcpp;
 
+// predict1d
+Eigen::VectorXd predict1d(const Eigen::MatrixXd& XY_mat, Eigen::VectorXd& X_pred, int kcode, double h);
+RcppExport SEXP _LoclinRcpp_predict1d(SEXP XY_matSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type XY_mat(XY_matSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type X_pred(X_predSEXP);
+    Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    rcpp_result_gen = Rcpp::wrap(predict1d(XY_mat, X_pred, kcode, h));
+    return rcpp_result_gen;
+END_RCPP
+}
+// multi
+Eigen::VectorXd multi(Eigen::VectorXd& Z, Eigen::VectorXd& Y, Eigen::VectorXd& X_pred, int kcode, double h);
+RcppExport SEXP _LoclinRcpp_multi(SEXP ZSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type Z(ZSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type X_pred(X_predSEXP);
+    Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    rcpp_result_gen = Rcpp::wrap(multi(Z, Y, X_pred, kcode, h));
+    return rcpp_result_gen;
+END_RCPP
+}
+// predict1dd
+Eigen::VectorXd predict1dd(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& X_pred, int kcode, double h);
+RcppExport SEXP _LoclinRcpp_predict1dd(SEXP XSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type X_pred(X_predSEXP);
+    Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    rcpp_result_gen = Rcpp::wrap(predict1dd(X, Y, X_pred, kcode, h));
+    return rcpp_result_gen;
+END_RCPP
+}
+// bin1d
+Eigen::VectorXd bin1d(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& X_pred, int kcode, double h, int bins);
+RcppExport SEXP _LoclinRcpp_bin1d(SEXP XSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP, SEXP binsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type X_pred(X_predSEXP);
+    Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
+    Rcpp::traits::input_parameter< double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< int >::type bins(binsSEXP);
+    rcpp_result_gen = Rcpp::wrap(bin1d(X, Y, X_pred, kcode, h, bins));
+    return rcpp_result_gen;
+END_RCPP
+}
 // loclin
 Eigen::VectorXd loclin(const Eigen::MatrixXd& XY_mat, int method, int kcode, double epsilon, const Eigen::VectorXd& h, int N_min);
 RcppExport SEXP _LoclinRcpp_loclin(SEXP XY_matSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP hSEXP, SEXP N_minSEXP) {
@@ -55,11 +115,33 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// csmoothmean
+Eigen::MatrixXd csmoothmean(const Eigen::Map<Eigen::VectorXd>& x, const Eigen::Map<Eigen::VectorXd>& z, const Eigen::Map<Eigen::VectorXd>& w, const double h, const std::string kernel, const int d, Eigen::Map<Eigen::VectorXd>& newx);
+RcppExport SEXP _LoclinRcpp_csmoothmean(SEXP xSEXP, SEXP zSEXP, SEXP wSEXP, SEXP hSEXP, SEXP kernelSEXP, SEXP dSEXP, SEXP newxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type x(xSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type z(zSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type w(wSEXP);
+    Rcpp::traits::input_parameter< const double >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type kernel(kernelSEXP);
+    Rcpp::traits::input_parameter< const int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXd>& >::type newx(newxSEXP);
+    rcpp_result_gen = Rcpp::wrap(csmoothmean(x, z, w, h, kernel, d, newx));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_LoclinRcpp_predict1d", (DL_FUNC) &_LoclinRcpp_predict1d, 4},
+    {"_LoclinRcpp_multi", (DL_FUNC) &_LoclinRcpp_multi, 5},
+    {"_LoclinRcpp_predict1dd", (DL_FUNC) &_LoclinRcpp_predict1dd, 5},
+    {"_LoclinRcpp_bin1d", (DL_FUNC) &_LoclinRcpp_bin1d, 6},
     {"_LoclinRcpp_loclin", (DL_FUNC) &_LoclinRcpp_loclin, 6},
     {"_LoclinRcpp_predict", (DL_FUNC) &_LoclinRcpp_predict, 7},
     {"_LoclinRcpp_bw_loocv", (DL_FUNC) &_LoclinRcpp_bw_loocv, 6},
+    {"_LoclinRcpp_csmoothmean", (DL_FUNC) &_LoclinRcpp_csmoothmean, 7},
     {NULL, NULL, 0}
 };
 
