@@ -275,8 +275,10 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
                                                                int kcode){
   
   std::pair<double,double> w_maxmin;
-  std::stack<std::shared_ptr<kdnode>> storage; 
-  std::shared_ptr<kdnode> curr = root; 
+  //std::stack<std::shared_ptr<kdnode>> storage; 
+  std::stack <kdnode *> storage; 
+  //std::shared_ptr<kdnode> curr = root; 
+  auto curr = root.get(); 
   Eigen::MatrixXd XtX = Eigen::MatrixXd::Zero(curr->XtX.rows() , curr->XtX.cols()); 
   Eigen::VectorXd XtY = Eigen::MatrixXd::Zero(curr->XtY.rows() , curr->XtY.cols());
   w_maxmin = calculate_weight(kcode, X_query, dim_max, dim_min,h);
@@ -286,7 +288,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
   while (w_max != w_min || storage.empty() == false){
     while (w_max != w_min ){   
       storage.push(curr);
-      curr = curr->left_child;  
+      curr = curr->left_child.get();  
       w_maxmin = calculate_weight(kcode, X_query, curr->dim_max, curr->dim_min, h);   
       w_max = w_maxmin.first;                      
       w_min = w_maxmin.second; 
@@ -299,7 +301,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
     
     curr = storage.top();
     storage.pop(); 
-    curr = curr->right_child; 
+    curr = curr->right_child.get(); 
     w_maxmin = calculate_weight(kcode, X_query, curr->dim_max, curr->dim_min, h);  // calculate max and min weight 
     w_max = w_maxmin.first;   
     w_min = w_maxmin.second; 
