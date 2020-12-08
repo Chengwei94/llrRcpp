@@ -72,3 +72,4 @@ ll_1d.cv <- function(X, Y, kernel = "epanechnikov", bw, k = 5 ){
   }
   h_opt
 }
+

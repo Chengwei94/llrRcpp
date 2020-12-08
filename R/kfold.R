@@ -13,32 +13,15 @@
 #' @importFrom dplyr mutate
 #'
 #' @export
-bw_cvkfold <- function(XY, method = c("approx", "exact"), kernel = "epanechnikov", epsilon =0.05, bw, N_min = 1, k = 5 ){
+ll.cv <- function(X, Y, method = c("approx", "exact"), kernel = "epanechnikov", epsilon = 0.05, bw, N_min = 1, k = 5){
   
   method <- match.arg(method)
-  
-  #helper function
-  partition_data<- function(XY,k){
-    set.seed(123)
-    XY <- data.frame(XY)
-    if (k != nrow(XY)){
-      XY <- dplyr::mutate(XY, myfolds = sample(1:k,
-                                                size = nrow(XY),
-                                                replace = TRUE))
-    }
-    else {
-      XY <- dplyr::mutate(XY, myfolds = sample(1:k,
-                                                size = nrow(XY),
-                                                replace = FALSE))
-    }
-    XY
-  }
-  
-  
-  ll_predict <- function(XY, X_pred, method = c('approx', 'exact'), kernel = 'epanechnikov', epsilon = 0.05,
+
+  #helper function  
+  ll_predict <- function(X, Y, X_pred, method = c('approx', 'exact'), kernel = 'epanechnikov', epsilon = 0.05,
                          bw, N_min = 1){
     
-    if (ncol(XY) != ncol(X_pred)+1) stop('Dimensions of predictors in XY must be same dimensions of predictors in X_pred')
+    method <- match.arg(method)
     
     switch(kernel,
            epanechnikov = {kcode <- 1},
@@ -57,38 +40,44 @@ bw_cvkfold <- function(XY, method = c("approx", "exact"), kernel = "epanechnikov
            approx = {metd <- 2},
            exact = {metd <- 1}
     )
+    
     #helper functions
     normalize <- function(x)
     {
       return(max(x)- min(x))
     }
     
-    scale <- apply(as.matrix(XY[,1:ncol(XY)-1]),2, FUN = normalize)
+    X <- as.matrix(X)
+    X_pred <- as.matrix(X_pred)
+    scale <- apply(X, 2, FUN = normalize)
     bw <- bw * scale
-    predict_values <- predict(XY, X_pred, metd, kcode, epsilon, bw, N_min)
+    predict_values <- predict(X, Y, X_pred, metd, kcode, epsilon, bw, N_min)
     predict_values
   }
   
-  XY <- partition_data(XY,k)
+  XY <- cbind.data.frame(X, Y)
+  XY <- XY[sample(nrow(XY)),]
+  folds <- cut(seq(1, nrow(XY)), breaks= k, labels=FALSE)
+  
   MSE_opt <- -1
+  h_opt <- -1
+  bw <- as.matrix(bw)
+  
   for (j in 1:nrow(bw)){
-    h <- bw[j, ]
-    MSE <- 0
+    h <- bw[j]
+    SSE <- 0
     for (i in 1:k){
-      train <- subset(XY, myfolds != i)
-      train <- train[,1:(ncol(train)-1)]
-      train <- as.matrix(train)
-      test <- subset(XY, myfolds == i)
-      Y_val <- test[,ncol(test)-1]
-      test <- test[,1:(ncol(test)-2)] # 2 (1 for myfolds, 1 for Y)
-      test <- as.matrix(test)
-      Y_val_predict <- ll_predict(train, test, method, kernel, epsilon, h, N_min)
-      SE <- (Y_val - Y_val_predict)^2
-      MSE <- MSE + mean(SE)
+      testIndexes <- which(folds==i,arr.ind=TRUE)
+      test <- XY[testIndexes, ]
+      train <- XY[-testIndexes, ]
+      y_pred <- ll_predict(train$X, train$Y, test$X, method, kernel, epsilon, h, N_min)
+      SE <- (test$Y - y_pred)^2
+      SSE <- c(SSE, SE)
     }
+    MSE <- mean(SSE)
     if(MSE_opt == -1 && MSE> 0){
       MSE_opt <- MSE
-      h_opt = h
+      h_opt <- h
     }
     else if (MSE <= MSE_opt) {
       MSE_opt <- MSE

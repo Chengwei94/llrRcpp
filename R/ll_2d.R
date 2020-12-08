@@ -11,11 +11,14 @@
 #' @param N_min number of points stored in the leaf of the tree (only works for approx)
 #'
 #' @export
-ll_predict <- function(X, Y, X_pred, method = c('approx', 'exact'), kernel = 'epanechnikov', epsilon = 0.05,
-                       bw, N_min = 1){
+ll_2d <- function(X, Y, X_pred, kernel = 'epanechnikov',
+                  bw){
   
-  method <- match.arg(method)
-  
+  X_pred <- as.matrix(X_pred)
+  X <- X[order(X[,1]), ]
+  X_pred <- X_pred[order(X_pred[,1]), ]
+  X_pred <- as.matrix(X_pred)
+                   
   switch(kernel,
          epanechnikov = {kcode <- 1},
          rectangular = {kcode <-2},
@@ -29,20 +32,16 @@ ll_predict <- function(X, Y, X_pred, method = c('approx', 'exact'), kernel = 'ep
          sigmoid = {kcode <- 23},
          silverman = {kcode <- 24}
   )
-  switch(method,
-         approx = {metd <- 2},
-         exact = {metd <- 1}
-  )
+  
   #helper functions
   normalize <- function(x)
   {
     return(max(x)- min(x))
-  }
-
+  } 
+  
   X <- as.matrix(X)
-  X_pred <- as.matrix(X_pred)
   scale <- apply(X, 2, FUN = normalize)
   bw <- bw * scale
-  y_pred <- predict(X, Y, X_pred, metd, kcode, epsilon, bw, N_min)
+  y_pred <- predict2dd(X, Y, X_pred, kcode, bw)
   y_pred
 }

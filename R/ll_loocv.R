@@ -10,7 +10,7 @@
 #' @param N_min number of points stored in the leaf of the tree (only works for approx)
 #' 
 #' @export 
-bw.gcv <- function(XY, method = c('approx', 'exact'), kernel = 'epanechnikov',
+bw.gcv <- function(X, Y, method = c('approx', 'exact'), kernel = 'epanechnikov',
                       epsilon = 0.05, bw, N_min = 1){
   
   method <- match.arg(method) 
@@ -40,9 +40,10 @@ bw.gcv <- function(XY, method = c('approx', 'exact'), kernel = 'epanechnikov',
     return(max(x)- min(x))
   } 
   
-  scale <- apply(as.matrix(XY[,1:ncol(XY)-1]) ,2, FUN = normalize)
+  X <- as.matrix(X)
+  scale <- apply(X, 2, FUN = normalize)
   bw <- bw * scale
-  h <- bw_loocv(XY, metd, kcode, epsilon, bw, N_min)
+  h <- bw_loocv(X, Y, metd, kcode, epsilon, bw, N_min)
   h <- h/scale
 }
 

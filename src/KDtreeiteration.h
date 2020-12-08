@@ -36,9 +36,9 @@ public:
     kdtree(); 
     ~kdtree();  
     std::shared_ptr<kdnode> root; 
-    std::shared_ptr<kdnode> build_tree(all_point_t::iterator, all_point_t::iterator, int, double, int, size_t, std::vector<double>, std::vector<double>);
+    std::shared_ptr<kdnode> build_tree(all_point_t::iterator, all_point_t::iterator, int, double, int, size_t, std::vector<double> &, std::vector<double> &);
     std::shared_ptr<kdnode> build_exacttree(all_point_t::iterator, all_point_t::iterator, int, double, int, size_t, std::vector<double>, std::vector<double>);
-    explicit kdtree(all_point_t XY_arr, int N_min); 
+    explicit kdtree(all_point_t& XY_arr, int N_min); 
     std::pair<Eigen::MatrixXd, Eigen::VectorXd> get_XtXXtY(const Eigen::VectorXd& X_query, std::vector<double> dim_max, std::vector<double> dim_min, std::shared_ptr<kdnode>& root, const Eigen::VectorXd& h, int kcode);
     std::pair<Eigen::MatrixXd, Eigen::VectorXd> getapprox_XtXXtY(const Eigen::VectorXd& X_query, std::vector<double> dim_max, std::vector<double> dim_min, std::shared_ptr<kdnode>& root, double epsilon, const Eigen::VectorXd& h, int kcode);
     std::pair<Eigen::MatrixXd, Eigen::VectorXd> find_XtXXtY(const Eigen::VectorXd& X_query, int method, double epsilon, const Eigen::VectorXd& h, int kcode);
@@ -80,4 +80,5 @@ Eigen::VectorXd predict1d(const Eigen::MatrixXd& XY_mat, Eigen::VectorXd& X_pred
                           double h);
 Eigen::VectorXd bin1d(const Eigen::VectorXd &X, const Eigen::VectorXd &Y, const Eigen::VectorXd& X_pred, int kcode, double h, int bins);
 Eigen::VectorXd predict1dd (const Eigen::VectorXd &X, const Eigen::VectorXd &Y, const Eigen::VectorXd& X_pred, int kcode, double h);
+Eigen::VectorXd predict2dd (const Eigen::MatrixXd &X, const Eigen::VectorXd &Y, const Eigen::MatrixXd& X_pred, int kcode, Eigen::VectorXd h);
     

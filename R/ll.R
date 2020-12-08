@@ -12,7 +12,7 @@
 #' 
 #' @return h 
 #' @export 
-ll <- function(XY, method = c("approx", "exact"), kernel = "epanechnikov", 
+ll <- function(X, Y, method = c("approx", "exact"), kernel = "epanechnikov", 
                epsilon = 0.05, bw, N_min = 1){
   
   method <- match.arg(method) 
@@ -41,8 +41,9 @@ ll <- function(XY, method = c("approx", "exact"), kernel = "epanechnikov",
     return(max(x)- min(x))
   } 
   
-  scale <- apply(as.matrix(XY[,1:ncol(XY)-1]),2, FUN = normalize)
+  scale <- apply(as.matrix(X) ,2, FUN = normalize)
   bw <- bw * scale
-  Xpred <- loclin(XY, metd, kcode, epsilon, bw, N_min)
+  X <- as.matrix(X)
+  Xpred <- loclin(X, Y, metd, kcode, epsilon, bw, N_min)
   Xpred
 }

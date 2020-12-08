@@ -50,6 +50,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// predict2dd
+Eigen::VectorXd predict2dd(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::MatrixXd& X_pred, int kcode, Eigen::VectorXd h);
+RcppExport SEXP _LoclinRcpp_predict2dd(SEXP XSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X_pred(X_predSEXP);
+    Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
+    Rcpp::traits::input_parameter< Eigen::VectorXd >::type h(hSEXP);
+    rcpp_result_gen = Rcpp::wrap(predict2dd(X, Y, X_pred, kcode, h));
+    return rcpp_result_gen;
+END_RCPP
+}
 // bin1d
 Eigen::VectorXd bin1d(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& X_pred, int kcode, double h, int bins);
 RcppExport SEXP _LoclinRcpp_bin1d(SEXP XSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP, SEXP binsSEXP) {
@@ -67,51 +82,54 @@ BEGIN_RCPP
 END_RCPP
 }
 // loclin
-Eigen::VectorXd loclin(const Eigen::MatrixXd& XY_mat, int method, int kcode, double epsilon, const Eigen::VectorXd& h, int N_min);
-RcppExport SEXP _LoclinRcpp_loclin(SEXP XY_matSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP hSEXP, SEXP N_minSEXP) {
+Eigen::VectorXd loclin(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, int method, int kcode, double epsilon, const Eigen::VectorXd& h, int N_min);
+RcppExport SEXP _LoclinRcpp_loclin(SEXP XSEXP, SEXP YSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP hSEXP, SEXP N_minSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type XY_mat(XY_matSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
     Rcpp::traits::input_parameter< int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type h(hSEXP);
     Rcpp::traits::input_parameter< int >::type N_min(N_minSEXP);
-    rcpp_result_gen = Rcpp::wrap(loclin(XY_mat, method, kcode, epsilon, h, N_min));
+    rcpp_result_gen = Rcpp::wrap(loclin(X, Y, method, kcode, epsilon, h, N_min));
     return rcpp_result_gen;
 END_RCPP
 }
 // predict
-Eigen::VectorXd predict(const Eigen::MatrixXd& XY_mat, const Eigen::MatrixXd& X_mat, int method, int kcode, double epsilon, const Eigen::VectorXd& h, int N_min);
-RcppExport SEXP _LoclinRcpp_predict(SEXP XY_matSEXP, SEXP X_matSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP hSEXP, SEXP N_minSEXP) {
+Eigen::VectorXd predict(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::MatrixXd& X_pred, int method, int kcode, double epsilon, const Eigen::VectorXd& h, int N_min);
+RcppExport SEXP _LoclinRcpp_predict(SEXP XSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP hSEXP, SEXP N_minSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type XY_mat(XY_matSEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X_mat(X_matSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X_pred(X_predSEXP);
     Rcpp::traits::input_parameter< int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type h(hSEXP);
     Rcpp::traits::input_parameter< int >::type N_min(N_minSEXP);
-    rcpp_result_gen = Rcpp::wrap(predict(XY_mat, X_mat, method, kcode, epsilon, h, N_min));
+    rcpp_result_gen = Rcpp::wrap(predict(X, Y, X_pred, method, kcode, epsilon, h, N_min));
     return rcpp_result_gen;
 END_RCPP
 }
 // bw_loocv
-Eigen::VectorXd bw_loocv(const Eigen::MatrixXd& XY_mat, int method, int kcode, double epsilon, const Eigen::MatrixXd& bw, int N_min);
-RcppExport SEXP _LoclinRcpp_bw_loocv(SEXP XY_matSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP bwSEXP, SEXP N_minSEXP) {
+Eigen::VectorXd bw_loocv(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, int method, int kcode, double epsilon, const Eigen::MatrixXd& bw, int N_min);
+RcppExport SEXP _LoclinRcpp_bw_loocv(SEXP XSEXP, SEXP YSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP bwSEXP, SEXP N_minSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type XY_mat(XY_matSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
     Rcpp::traits::input_parameter< int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type bw(bwSEXP);
     Rcpp::traits::input_parameter< int >::type N_min(N_minSEXP);
-    rcpp_result_gen = Rcpp::wrap(bw_loocv(XY_mat, method, kcode, epsilon, bw, N_min));
+    rcpp_result_gen = Rcpp::wrap(bw_loocv(X, Y, method, kcode, epsilon, bw, N_min));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -132,16 +150,50 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// crawcov
+Rcpp::List crawcov(const Rcpp::List& Lt, const Rcpp::List& Ly, const Eigen::VectorXd weig);
+RcppExport SEXP _LoclinRcpp_crawcov(SEXP LtSEXP, SEXP LySEXP, SEXP weigSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type Lt(LtSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type Ly(LySEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type weig(weigSEXP);
+    rcpp_result_gen = Rcpp::wrap(crawcov(Lt, Ly, weig));
+    return rcpp_result_gen;
+END_RCPP
+}
+// csmoothcov
+Eigen::MatrixXd csmoothcov(const Eigen::Map<Eigen::VectorXd>& h, const std::string kernel, const Eigen::Map<Eigen::MatrixXd>& xy, const Eigen::Map<Eigen::MatrixXd>& z, const Eigen::Map<Eigen::VectorXd>& w, Eigen::Map<Eigen::VectorXd>& xgrid, Eigen::Map<Eigen::VectorXd>& ygrid, const double delta);
+RcppExport SEXP _LoclinRcpp_csmoothcov(SEXP hSEXP, SEXP kernelSEXP, SEXP xySEXP, SEXP zSEXP, SEXP wSEXP, SEXP xgridSEXP, SEXP ygridSEXP, SEXP deltaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const std::string >::type kernel(kernelSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type xy(xySEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type z(zSEXP);
+    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type w(wSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXd>& >::type xgrid(xgridSEXP);
+    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXd>& >::type ygrid(ygridSEXP);
+    Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
+    rcpp_result_gen = Rcpp::wrap(csmoothcov(h, kernel, xy, z, w, xgrid, ygrid, delta));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_LoclinRcpp_predict1d", (DL_FUNC) &_LoclinRcpp_predict1d, 4},
     {"_LoclinRcpp_multi", (DL_FUNC) &_LoclinRcpp_multi, 5},
     {"_LoclinRcpp_predict1dd", (DL_FUNC) &_LoclinRcpp_predict1dd, 5},
+    {"_LoclinRcpp_predict2dd", (DL_FUNC) &_LoclinRcpp_predict2dd, 5},
     {"_LoclinRcpp_bin1d", (DL_FUNC) &_LoclinRcpp_bin1d, 6},
-    {"_LoclinRcpp_loclin", (DL_FUNC) &_LoclinRcpp_loclin, 6},
-    {"_LoclinRcpp_predict", (DL_FUNC) &_LoclinRcpp_predict, 7},
-    {"_LoclinRcpp_bw_loocv", (DL_FUNC) &_LoclinRcpp_bw_loocv, 6},
+    {"_LoclinRcpp_loclin", (DL_FUNC) &_LoclinRcpp_loclin, 7},
+    {"_LoclinRcpp_predict", (DL_FUNC) &_LoclinRcpp_predict, 8},
+    {"_LoclinRcpp_bw_loocv", (DL_FUNC) &_LoclinRcpp_bw_loocv, 7},
     {"_LoclinRcpp_csmoothmean", (DL_FUNC) &_LoclinRcpp_csmoothmean, 7},
+    {"_LoclinRcpp_crawcov", (DL_FUNC) &_LoclinRcpp_crawcov, 3},
+    {"_LoclinRcpp_csmoothcov", (DL_FUNC) &_LoclinRcpp_csmoothcov, 8},
     {NULL, NULL, 0}
 };
 

@@ -13,23 +13,35 @@ predict1dd <- function(X, Y, X_pred, kcode, h) {
     .Call(`_LoclinRcpp_predict1dd`, X, Y, X_pred, kcode, h)
 }
 
+predict2dd <- function(X, Y, X_pred, kcode, h) {
+    .Call(`_LoclinRcpp_predict2dd`, X, Y, X_pred, kcode, h)
+}
+
 bin1d <- function(X, Y, X_pred, kcode, h, bins) {
     .Call(`_LoclinRcpp_bin1d`, X, Y, X_pred, kcode, h, bins)
 }
 
-loclin <- function(XY_mat, method, kcode, epsilon, h, N_min) {
-    .Call(`_LoclinRcpp_loclin`, XY_mat, method, kcode, epsilon, h, N_min)
+loclin <- function(X, Y, method, kcode, epsilon, h, N_min) {
+    .Call(`_LoclinRcpp_loclin`, X, Y, method, kcode, epsilon, h, N_min)
 }
 
-predict <- function(XY_mat, X_mat, method, kcode, epsilon, h, N_min) {
-    .Call(`_LoclinRcpp_predict`, XY_mat, X_mat, method, kcode, epsilon, h, N_min)
+predict <- function(X, Y, X_pred, method, kcode, epsilon, h, N_min) {
+    .Call(`_LoclinRcpp_predict`, X, Y, X_pred, method, kcode, epsilon, h, N_min)
 }
 
-bw_loocv <- function(XY_mat, method, kcode, epsilon, bw, N_min) {
-    .Call(`_LoclinRcpp_bw_loocv`, XY_mat, method, kcode, epsilon, bw, N_min)
+bw_loocv <- function(X, Y, method, kcode, epsilon, bw, N_min) {
+    .Call(`_LoclinRcpp_bw_loocv`, X, Y, method, kcode, epsilon, bw, N_min)
 }
 
 csmoothmean <- function(x, z, w, h, kernel, d, newx) {
     .Call(`_LoclinRcpp_csmoothmean`, x, z, w, h, kernel, d, newx)
+}
+
+crawcov <- function(Lt, Ly, weig) {
+    .Call(`_LoclinRcpp_crawcov`, Lt, Ly, weig)
+}
+
+csmoothcov <- function(h, kernel, xy, z, w, xgrid, ygrid, delta) {
+    .Call(`_LoclinRcpp_csmoothcov`, h, kernel, xy, z, w, xgrid, ygrid, delta)
 }
 

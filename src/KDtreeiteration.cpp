@@ -27,14 +27,6 @@ kdnode::kdnode() = default;  // constructor
 kdnode::kdnode(kdnode&& rhs) = default;  //move 
 kdnode::~kdnode() = default;  // destructor  
 
-/*
- template <typename T, typename U>                            // overloading operator for addition betweeen pairs
- std::pair<T, U> operator+(const std::pair<T,U> & l, const std::pair<T,U> & r ) {
- return {l.first+r.first, l.second + r.second}; 
- } 
- */
-
-
 template<typename T>            //overloading vector cout for printing purposes
 std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
     out << "{";
@@ -50,7 +42,7 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
 
 std::shared_ptr<kdnode> kdtree::build_tree(all_point_t::iterator start, all_point_t::iterator end, 
                                            int split_d, double split_v, int N_min, size_t len,
-                                           std::vector<double> dim_max_, std::vector<double> dim_min_){
+                                           const std::vector<double>& dim_max_, const std::vector<double>& dim_min_){
     
     std::shared_ptr<kdnode> newnode = std::make_shared<kdnode>();
     
@@ -136,23 +128,25 @@ std::shared_ptr<kdnode> kdtree::build_tree(all_point_t::iterator start, all_poin
 }
 
 
-kdtree::kdtree(all_point_t XY_arr, int N_min) {   // command to create kd tree 
+kdtree::kdtree(all_point_t& XY_arr, int N_min) {   // command to create kd tree 
+   
     size_t len = XY_arr.size(); 
-    std::vector<double> dim_max;        
-    std::vector<double> dim_min; 
+
+    std::vector<double> dim_max_;        
+    std::vector<double> dim_min_; 
     
     for(size_t i=1; i<XY_arr[0].size()-1; i++){         
-        dim_max.push_back(XY_arr[0](i)); 
-        dim_min.push_back(XY_arr[0](i));
+        dim_max_.push_back(XY_arr[0](i)); 
+        dim_min_.push_back(XY_arr[0](i));
     }
     
     for(size_t i=1; i<XY_arr[0].size()-1; i++) { 
         for (size_t j=0; j<XY_arr.size(); j++){
             if (XY_arr[j](i) > dim_max.at(i-1)){
-                dim_max.at(i-1) = XY_arr[j](i);
+                dim_max_.at(i-1) = XY_arr[j](i);
             }
             if (XY_arr[j][i] < dim_min.at(i-1)){ 
-                dim_min.at(i-1) = XY_arr[j](i);
+                dim_min_.at(i-1) = XY_arr[j](i);
             }
         }
     } 
@@ -517,12 +511,55 @@ Eigen::VectorXd predict1dd (const Eigen::VectorXd &X, const Eigen::VectorXd &Y, 
         Eigen::MatrixXd X1(m, 2);
         X1.setOnes(); 
         Eigen::VectorXd Y1(m);
+        Eigen::VectorXd W(m); 
         for (int j = 0; j < m; j ++){
             X1(j, 1) = X(j+lb) - X_pred(i); 
+            W(j) = eval_kernel(kcode,X1(j,1));
             Y1(j) = Y(j+lb); 
         }
-        Eigen::VectorXd W = get_w(kcode, X1.col(1)/h); 
+        // Eigen::VectorXd W = get_w(kcode, X1.col(1)/h); 
+    
+        Eigen::VectorXd beta = calculate_beta(kcode, X1.transpose()*W.asDiagonal()*X1 , X1.transpose() * W.asDiagonal() *Y1);
+        beta_0(i) = beta(0);
+    }
+    return beta_0; 
+}
+
+// [[Rcpp::export]]
+Eigen::VectorXd predict2dd (const Eigen::MatrixXd &X, const Eigen::VectorXd &Y, const Eigen::MatrixXd& X_pred, int kcode, Eigen::VectorXd h){
+    Eigen::VectorXd beta_0(X_pred.rows());
+    int lb = 0;
+    int ub = 0; 
+    for(int i= 0; i < X_pred.rows(); i++) { 
+        while (lb < X.rows() &&  X(lb,0) < (X_pred(i,0) - h(0))){
+            lb++; 
+        } 
+        while (ub < X.rows() &&  X(ub,0) < (X_pred(i,0) + h(0))){ 
+            ub++;
+        }
         
+        std::vector<int> idx;
+        for (int j = lb; j < ub; j++) { 
+            if (abs(X(j,1) - X_pred(i,1)) <= h(1))  
+            idx.push_back(j);  
+        }
+        Eigen::MatrixXd X1(idx.size(), 3); 
+        X1.setOnes(); 
+        Eigen::VectorXd Y1(idx.size());
+        Eigen::VectorXd W(idx.size());
+        
+        if(idx.size() <= 5){ 
+          Rcpp::stop("Choose a larger bandwidth");
+        }
+        
+        for (int j = 0; j < idx.size(); j ++){
+            X1(j,1) = X(idx[j],0) - X_pred(i,0);
+            X1(j,2) = X(idx[j],1) - X_pred(i,1);
+            W(j)  = eval_kernel(kcode, X1(j,1)/h(0)) * eval_kernel (kcode, X1(j,2)/h(1));  
+            Y1(j) = Y(idx[j]); 
+        }
+
+        // Eigen::VectorXd W = get_w(kcode, X1.col(1)/h); 
         Eigen::VectorXd beta = calculate_beta(kcode, X1.transpose()*W.asDiagonal()*X1 , X1.transpose() * W.asDiagonal() *Y1);
         beta_0(i) = beta(0);
     }
@@ -537,10 +574,10 @@ Eigen::VectorXd bin1d(const Eigen::VectorXd &X, const Eigen::VectorXd &Y, const 
     double grid_end = X.maxCoeff(); 
     double binwidth = (grid_end - grid_start) / (bins-1);
    
-    if (X.size() < bins || h < binwidth){ 
-        Rcpp::Rcout << "bandwidth too small or datapoints > bins, using non-bin local linear instead."; 
-        return predict1dd(X, Y, X_pred, kcode, h);  
-    }
+    //if (X.size() < bins || h < binwidth){ 
+      //  Rcpp::Rcout << "bandwidth too small or datapoints > bins, using non-bin local linear instead."; 
+     //   return predict1dd(X, Y, X_pred, kcode, h);  
+    //}
 
     // Linear binning;
     Eigen::VectorXd c_l = Eigen::VectorXd::Zero(bins);  
@@ -596,20 +633,23 @@ Eigen::VectorXd bin1d(const Eigen::VectorXd &X, const Eigen::VectorXd &Y, const 
 }
 
 // [[Rcpp::export]]
-Eigen::VectorXd loclin(const Eigen::MatrixXd& XY_mat, int method, int kcode, 
-                       double epsilon, const Eigen::VectorXd& h,  int N_min){    //method 1 for exact, 2 for approximate, bandwidth is 1d, will add vector later, epsilon is for epsilon for
+Eigen::VectorXd loclin(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, int method, int kcode, 
+                       double epsilon, const Eigen::VectorXd& h, int N_min){    //method 1 for exact, 2 for approximate, bandwidth is 1d, will add vector later, epsilon is for epsilon for
     
+    Eigen::MatrixXd XY_mat(X.rows(), X.cols() + 1);
+    XY_mat << X, Y; 
+
     all_point_t XY_arr = XYmat_to_XYarr(XY_mat);   //preprocessing work to convert data into structures that we want 
-    all_point_t X_query = XYmat_to_Xarr(XY_mat);
+
     Eigen::VectorXd beta_0(XY_arr.size());
     std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY;
     Eigen::VectorXd beta;
-    
+   
     kdtree tree(XY_arr, N_min);     //building tree 
     
-    #pragma omp parallel for schedule(static) private(XtXXtY, beta)
+   // #pragma omp parallel for schedule(static) private(XtXXtY, beta)
     for (size_t i = 0; i< XY_arr.size(); i++) { 
-        XtXXtY = tree.find_XtXXtY(X_query.at(i), method, epsilon, h, kcode); 
+        XtXXtY = tree.find_XtXXtY(X.row(i), method, epsilon, h, kcode); 
         beta = calculate_beta(kcode, XtXXtY.first, XtXXtY.second);
         beta_0(i) = beta(0); 
     }
@@ -617,20 +657,21 @@ Eigen::VectorXd loclin(const Eigen::MatrixXd& XY_mat, int method, int kcode,
 }
 
 // [[Rcpp::export]]
-Eigen::VectorXd predict(const Eigen::MatrixXd& XY_mat, const Eigen::MatrixXd& X_mat, int method, int kcode, 
+Eigen::VectorXd predict(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::MatrixXd& X_pred, int method, int kcode, 
                         double epsilon, const Eigen::VectorXd& h,  int N_min){    //method 1 for exact, 2 for approximate, bandwidth is 1d, will add vector later, epsilon is for epsilon for
-    all_point_t XY_arr;     //preprocessing work to convert data into structures that we want 
-    all_point_t X_query;                                    
-    XY_arr = XYmat_to_XYarr(XY_mat); 
-    X_query = Xmat_to_Xarr(X_mat);
-    Eigen::VectorXd beta_0(X_mat.rows());
+    
+    Eigen::MatrixXd XY_mat(X.rows(), X.cols() + 1);
+    XY_mat << X, Y; 
+    
+    all_point_t XY_arr = XYmat_to_XYarr(XY_mat) ;     //preprocessing work to convert data into structures that we want 
+    Eigen::VectorXd beta_0(X_pred.rows());
     
     kdtree tree(XY_arr, N_min); //building tree
     
-    #pragma omp parallel for schedule(static) 
-    for (size_t i = 0; i< X_mat.rows(); i++) { 
+    // #pragma omp parallel for schedule(static) 
+    for (size_t i = 0; i< X_pred.rows(); i++) { 
         std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY;
-        XtXXtY = tree.find_XtXXtY(X_query.at(i), method, epsilon, h, kcode); 
+        XtXXtY = tree.find_XtXXtY(X_pred.row(i), method, epsilon, h, kcode); 
         Eigen::VectorXd beta = calculate_beta(kcode, XtXXtY.first, XtXXtY.second);
         beta_0(i) = beta(0); 
     }
@@ -638,15 +679,16 @@ Eigen::VectorXd predict(const Eigen::MatrixXd& XY_mat, const Eigen::MatrixXd& X_
 }
 
 // [[Rcpp::export]]
-Eigen::VectorXd bw_loocv(const Eigen::MatrixXd& XY_mat, int method, int kcode, double epsilon,
+Eigen::VectorXd bw_loocv(const Eigen::MatrixXd& X, const Eigen::VectorXd &Y, int method, int kcode, double epsilon,
                          const Eigen::MatrixXd& bw, int N_min){
     
-    Eigen::VectorXd Y_mat = XY_mat.col(XY_mat.cols()-1);
+    Eigen::MatrixXd XY_mat(X.rows(), X.cols() + 1);
+    XY_mat << X, Y;  
+
     Eigen::VectorXd SSE_arr(bw.rows());
     Eigen::VectorXd bw_opt;
     
     all_point_t XY_arr = XYmat_to_XYarr(XY_mat);
-    all_point_t X_query = XYmat_to_Xarr(XY_mat);
     Eigen::VectorXd beta_0(XY_arr.size());
     
     kdtree tree(XY_arr, N_min);
@@ -661,15 +703,15 @@ Eigen::VectorXd bw_loocv(const Eigen::MatrixXd& XY_mat, int method, int kcode, d
         h = bw.row(i);
         SSE = 0;
         
-        #pragma omp parallel for reduction(+: SSE)
+        // #pragma omp parallel for reduction(+: SSE)
         for (int j = 0; j< XY_arr.size(); j++) {
             std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY;
-            XtXXtY = tree.find_XtXXtY(X_query.at(j), method, epsilon, h, kcode);
+            XtXXtY = tree.find_XtXXtY(X.row(j), method, epsilon, h, kcode);
             std::pair<Eigen::VectorXd, double> beta_XtXinv = calculate_beta_XtXinv(kcode, XtXXtY.first, XtXXtY.second);
             Eigen::VectorXd beta = beta_XtXinv.first;
             beta_0(j) = beta(0);
             w_point = max_weight(kcode, h) * beta_XtXinv.second;
-            SSE += pow((beta_0(j) - Y_mat(j)) / (1-w_point),2);
+            SSE += pow((beta_0(j) - Y(j)) / (1-w_point),2);
         }
         SSE_arr(i) = SSE;
         if (SSE_opt == -1 && SSE >= 0){ 
