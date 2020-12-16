@@ -20,21 +20,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// multi
-Eigen::VectorXd multi(Eigen::VectorXd& Z, Eigen::VectorXd& Y, Eigen::VectorXd& X_pred, int kcode, double h);
-RcppExport SEXP _LoclinRcpp_multi(SEXP ZSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type Z(ZSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd& >::type X_pred(X_predSEXP);
-    Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
-    Rcpp::traits::input_parameter< double >::type h(hSEXP);
-    rcpp_result_gen = Rcpp::wrap(multi(Z, Y, X_pred, kcode, h));
-    return rcpp_result_gen;
-END_RCPP
-}
 // predict1dd
 Eigen::VectorXd predict1dd(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& X_pred, int kcode, double h);
 RcppExport SEXP _LoclinRcpp_predict1dd(SEXP XSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP kcodeSEXP, SEXP hSEXP) {
@@ -184,7 +169,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_LoclinRcpp_predict1d", (DL_FUNC) &_LoclinRcpp_predict1d, 4},
-    {"_LoclinRcpp_multi", (DL_FUNC) &_LoclinRcpp_multi, 5},
     {"_LoclinRcpp_predict1dd", (DL_FUNC) &_LoclinRcpp_predict1dd, 5},
     {"_LoclinRcpp_predict2dd", (DL_FUNC) &_LoclinRcpp_predict2dd, 5},
     {"_LoclinRcpp_bin1d", (DL_FUNC) &_LoclinRcpp_bin1d, 6},

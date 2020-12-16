@@ -5,10 +5,14 @@ predict1d <- function(XY_mat, X_pred, kcode, h) {
     .Call(`_LoclinRcpp_predict1d`, XY_mat, X_pred, kcode, h)
 }
 
-multi <- function(Z, Y, X_pred, kcode, h) {
-    .Call(`_LoclinRcpp_multi`, Z, Y, X_pred, kcode, h)
-}
-
+#' Multiplies two doubles
+#'
+#' @param X X 
+#' @param Y Y 
+#' @param X_pred X_pred
+#' @param kcode kcode
+#' @param h h 
+#' @export
 predict1dd <- function(X, Y, X_pred, kcode, h) {
     .Call(`_LoclinRcpp_predict1dd`, X, Y, X_pred, kcode, h)
 }

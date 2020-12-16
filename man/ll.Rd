@@ -5,7 +5,8 @@
 \title{Local linear regression}
 \usage{
 ll(
-  XY,
+  X,
+  Y,
   method = c("approx", "exact"),
   kernel = "epanechnikov",
   epsilon = 0.05,
@@ -14,7 +15,9 @@ ll(
 )
 }
 \arguments{
-\item{XY}{a matrix of the estimators with the observed values in the last colum}
+\item{X}{a matrix of the estimators with the observed values in the last column}
+
+\item{Y}{a matrix of the estimators with the observed values in the last column}
 
 \item{method}{estimation method}
 
