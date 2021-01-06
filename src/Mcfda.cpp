@@ -99,8 +99,8 @@ inline double locpoly(const Eigen::VectorXd& x,
 
 
 // [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::export]]
 
+// [[Rcpp::export]]
 Eigen::MatrixXd csmoothmean(const Eigen::Map<Eigen::VectorXd> & x, // sorted in increasing order
                             const Eigen::Map<Eigen::VectorXd> & z, // Y(x)
                             const Eigen::Map<Eigen::VectorXd> & w, // weight for each observation

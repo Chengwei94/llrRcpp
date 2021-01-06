@@ -1,3 +1,3 @@
-#' @useDynLib LoclinRcpp, .registration=TRUE
-#' @importFrom Rcpp sourceCpp
+#' @useDynLib llrRcpp, .registration=TRUE
+#' @import Rcpp 
 NULL
