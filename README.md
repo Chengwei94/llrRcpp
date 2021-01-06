@@ -1,4 +1,4 @@
-# Locallinearregression
+# llrRcpp
 
 
 # Installation
