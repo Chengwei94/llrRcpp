@@ -30,48 +30,46 @@
 cv.llr <- function(x, y, weight, kernel = "epanechnikov", bw, 
                      kdtree = FALSE, approx = FALSE, epsilon = 0.05, N_min = 1, k = 5){
   
+  calc_sse <- function(h, data, kdtree, approx) {
+    mse_tot <- 0
+    for (i in 0:(k - 1)) {
+      train <- data[data$idx != i, ]
+      test <- data[data$idx == i, ]
+      test <- test[order(test[,1]),]
+      
+      if (!kdtree){
+          test$y_est <- llr(train[, 1:(ncol(data)-3)], train$y, test[, 1:(ncol(data)-3)], 
+                            bw = h, weight = train$weight)$fitted
+      }
+      else {
+        if (approx){
+          test$y_est <- llr(train[, 1:(ncol(data)-3)], train$y, test[, 1:(ncol(data)-3)], 
+                            kdtree = TRUE, bw = h, weight = train$weight)$fitted
+        } 
+        else {
+          test$y_est <- llr(train[, 1:(ncol(data)-3)], train$y, test[, 1:(ncol(data)-3)], 
+                            kdtree = TRUE, approx = TRUE, bw = h, weight = train$weight)$fitted
+        }
+      }
+      
+      sse <- sum((test$y_est - test$y)^2, na.rm = TRUE)
+      n <- sum(is.finite(test$y_est))
+      mse <- sse / n
+      mse_tot <- mse_tot + mse
+    }
+    mse_tot
+  }
   x <- as.matrix(x)
   y <- as.numeric(y) 
   weight <- as.numeric(weight)
   bw <- as.matrix(bw)
   
-  xy <- cbind.data.frame(x, y, weight)
-  xy <- xy[sample(nrow(xy)),]
-  folds <- cut(seq(1,nrow(xy)),breaks= k,labels=FALSE)
+  n <- length(y)
+  idx <- sample(n, n) %% k
+  df <- data.frame(x, y, weight, idx)
+  table <- data.frame(bw)
+  table$mse <- apply(table, 1, calc_sse, data = df, kdtree = kdtree , approx = approx)
 
-  MSE_opt <- -1
-  h_opt <- -1
-  TSE <- 0 
-  for (j in 1:nrow(bw)){
-    h <- bw[j,]
-    SSE <- 0
-    for (i in 1:k){
-      testIndexes <- which(folds==i,arr.ind=TRUE)
-      test <- xy[testIndexes, ]
-      train <- xy[-testIndexes, ]
-      test <- test[order(test[,1]), ]
-      if (kdtree == FALSE){
-        ypred <- llr(train[,1:ncol(x)], train$y, test[,1:ncol(x)], kernel, h, train$weight)
-      }
-      else { 
-        ypred <- llr(train[,1:ncol(x)], train$y, test[,1:ncol(x)], kernel, h, train$weight, kdtree, approx, epsilon, N_min)
-      }
-      
-    SE <- (test$y - ypred$fitted)^2
-    SSE <- c(SSE, SE)
-    }
-    
-    MSE <- mean(SSE)
-    TSE <- cbind(TSE, MSE)
-    
-    if(MSE_opt == -1 && MSE> 0){
-      MSE_opt <- MSE
-      h_opt <- h
-    }
-    else if (MSE <= MSE_opt) {
-      MSE_opt <- MSE
-      h_opt <- h
-    }
-  }
-  h_opt
+  h_opt <- table[which.min(table$mse),]
+  h_opt <- h_opt[,1:ncol(bw)]
 }
