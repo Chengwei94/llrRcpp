@@ -12,4 +12,7 @@ Imports: Rcpp, methods
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.1.1
 Suggests: 
+    rmarkdown,
+    knitr,
     testthat
+VignetteBuilder: knitr
