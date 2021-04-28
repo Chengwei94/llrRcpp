@@ -1,8 +1,13 @@
-# llrRcpp
+## llrRcpp
 
 
-# Installation
+## Installation
+Install devtools 
+
+```
+library(devtools)
 devtools::install_github("Chengwei94/llrRcpp")
+```
 
 # Details 
 Making use of a kd-tree for estimation of local linear estimation. For both approx and exact method. 
