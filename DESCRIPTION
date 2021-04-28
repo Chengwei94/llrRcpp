@@ -5,8 +5,7 @@ Version: 1.0
 Date: 2020-10-26
 Author: chengwei  
 Maintainer: chengwei <e0002969@u.nus.edu>
-Description: One paragraph description of what the package does as
-       one or more full sentences.
+Description: This package provides an implementation of multivariate local linear regression using kd-tree implementation. Both an exact and approxiate algorithm for using the kd-tree are present. The package also provides a binned method for the implementation of up to 2d. 
 License: GPL (>= 2)
 Encoding: UTF-8
 Imports: Rcpp, methods

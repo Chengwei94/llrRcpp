@@ -5,7 +5,7 @@
 \alias{llr-class}
 \alias{llr.default}
 \alias{llr.bin}
-\title{Local linear Regression}
+\title{Local linear regression (Regular and binned version)}
 \usage{
 llr(x, ...)
 
@@ -26,13 +26,13 @@ llr(x, ...)
 \method{llr}{bin}(x, xpred, kernel = "epanechnikov", bw, ...)
 }
 \arguments{
-\item{x}{a numeric vector/matrix of x data or a data object(bin) used to select the method}
+\item{x}{object from bin}
 
 \item{...}{further arguments to be passed}
 
 \item{y}{a numeric vector of y data corresponding to \code{x}.}
 
-\item{xpred}{a numeric vector or matrix of same dimension as \code{x}.}
+\item{xpred}{a numeric vector or matrix of same dimension as \code{x}. x values to be predicted.}
 
 \item{kernel}{kernel type used; supported are 'epanechnikov', "rectangular", "triangular", "quartic", "triweight", "tricube", "cosine", "gauss", "logistic".}
 
@@ -46,31 +46,33 @@ llr(x, ...)
 
 \item{epsilon}{margin of error allowed for llr approximation using kdtree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}.}
 
-\item{N_min}{minimum number of points stored in the kd-tree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}.}
+\item{N_min}{minimum number of points stored in the kd-tree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}. Currently not available}
 }
 \value{
 returns a S3 object of class "llr" containing
-\itemize{
-   \item {\code{x} sorted numeric vector or matrix of \code{xpred}.}
-   \item {\code{fitted} estimated values corresponding to \code{x}.}
+\describe{
+   \item{x}{sorted numeric vector or matrix of \code{xpred}}
+   \item{y}{estimated values corresponding to 'llr' class \code{x}}
 }
 }
 \description{
-Local linear Regression
+Local linear regression (Regular and binned version)
 }
 \examples{
+\dontrun{
 n <- 1000
-x <- seq(0,10,length.out = n)
-x1 <- rnorm(n,0,0.2)
+x <- seq(0, 10, length.out = n)
+x1 <- rnorm(n, 0, 0.2)
 y <- sin(x) + x1
-w <- rep(1/n, n)
-binned <- bin(x, y, bins=400, w)
+w <- rep(1 / n, n)
+binned <- bin(x, y, bins = 400, w)
 ## local linear regression for exact without kdtree
-llr_exact <- llr(x, y, x, bw =0.2, weight = w)
+llr_exact <- llr(x, y, x, bw = 0.2, weight = w)
 ## local linear regression for kdtree exact
 llr_kdexact <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE)
 ## local linear regression for kdtree approximation
 llr_kdapprox <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE, approx = TRUE)
 ## local linear regression for data after binning.
-llr_bin <- llr(binned, x , bw = 0.2)
+llr_bin <- llr(binned, x, bw = 0.2)
+}
 }

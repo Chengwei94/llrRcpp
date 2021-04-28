@@ -21,23 +21,11 @@ bin2d_cpp <- function(X, Y, bins, wt) {
     .Call(`_llrRcpp_bin2d_cpp`, X, Y, bins, wt)
 }
 
-llrt_cpp <- function(X, Y, xpred, wt, method, kcode, epsilon, h, N_min) {
-    .Call(`_llrRcpp_llrt_cpp`, X, Y, xpred, wt, method, kcode, epsilon, h, N_min)
+llrt_cpp <- function(X, Y, X_pred, wt, method, kcode, epsilon, h, N_min) {
+    .Call(`_llrRcpp_llrt_cpp`, X, Y, X_pred, wt, method, kcode, epsilon, h, N_min)
 }
 
 tgcv_cpp <- function(X, Y, wt, method, kcode, epsilon, bw, N_min) {
     .Call(`_llrRcpp_tgcv_cpp`, X, Y, wt, method, kcode, epsilon, bw, N_min)
-}
-
-csmoothmean <- function(x, z, w, h, kernel, d, newx) {
-    .Call(`_llrRcpp_csmoothmean`, x, z, w, h, kernel, d, newx)
-}
-
-crawcov <- function(Lt, Ly, weig) {
-    .Call(`_llrRcpp_crawcov`, Lt, Ly, weig)
-}
-
-csmoothcov <- function(h, kernel, xy, z, w, xgrid, ygrid, delta) {
-    .Call(`_llrRcpp_csmoothcov`, h, kernel, xy, z, w, xgrid, ygrid, delta)
 }
 

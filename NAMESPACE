@@ -2,9 +2,12 @@
 
 S3method(llr,bin)
 S3method(llr,default)
+S3method(plot,bin)
+S3method(plot,llr)
 export(bin)
 export(cv.llr)
 export(gcv.llr)
 export(llr)
 import(Rcpp)
+importFrom(graphics,lines)
 useDynLib(llrRcpp, .registration=TRUE)

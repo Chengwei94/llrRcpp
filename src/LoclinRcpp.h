@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iostream>
 
+using all_point_t = std::vector<Eigen::VectorXd>; 
 
 all_point_t XYmat_to_XYarr(const Eigen::MatrixXd& XY_mat);  
 double eval_kernel(int kcode, const double& z);
@@ -20,10 +21,12 @@ double max_weight(int kcode, const Eigen::VectorXd&h);
 // Eigen::VectorXd loclin(const Eigen::MatrixXd& XY_mat, int method, int kcode, 
 //                        double epsilon, const Eigen::VectorXd& h, int N_min);
 Rcpp::List bin1d_cpp(const Eigen::VectorXd& X, const Eigen::VectorXd&Y, int bins, const Eigen::VectorXd& wt);
+Rcpp::List bin2d_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd&Y, int bins, const Eigen::VectorXd& wt);// bins at each dir
 Eigen::VectorXd llr1d_cpp(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& X_pred, int kcode, double h, Eigen::VectorXd wt);
 Eigen::VectorXd llr2d_cpp (const Eigen::MatrixXd &X, const Eigen::VectorXd &Y, const Eigen::MatrixXd& X_pred, int kcode, Eigen::VectorXd h, Eigen::VectorXd wt);
 Eigen::VectorXd llr_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::MatrixXd& X_pred,
                         int kcode, Eigen::VectorXd h, const Eigen::VectorXd &wt);
-Rcpp::List bin2d_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd&Y, int bins, const Eigen::VectorXd& wt);// bins at each dir
-Eigen::VectorXd llrt_cpp(const kdtree& tree, const Eigen::MatrixXd& xpred, int method, int kcode, 
+Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd &Y, const Eigen::MatrixXd& xpred, const Eigen::VectorXd& wt, int method, int kcode,
                          double epsilon, const Eigen::VectorXd& h, int N_min);
+Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode,
+                         double epsilon, const Eigen::MatrixXd& bw, int N_min);

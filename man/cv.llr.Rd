@@ -9,7 +9,7 @@ cv.llr(
   y,
   weight,
   kernel = "epanechnikov",
-  bw = seq(0.05, 0.4, by = 0.01),
+  bw,
   kdtree = FALSE,
   approx = FALSE,
   epsilon = 0.05,
@@ -51,12 +51,13 @@ x1 <- rnorm(n,0,0.2)
 y <- sin(x) + x1
 w <- rep(1/n, n)
 binned <- bin(x,y,bins=400, w)
+bw <- seq(0.02, 0.3, by = 0.02)
 ## Bandwidth selection of binned data
-h_bin <- cv.llr(binned$x, binned$y, binned$weight)
+h_bin <- cv.llr(binned$x, binned$y, binned$weight, bw = bw)
 ## Bandwidth selection of exact local linear regression
-h_exact <- cv.llr(x, y, w)
+h_exact <- cv.llr(x, y, w , bw = bw)
 ## Bandwidth selection of exact local linear regression with kdtree
-h_kdexact <- cv.llr(x, y, w, kdtree = TRUE, approx = FALSE)
+h_kdexact <- cv.llr(x, y, w, kdtree = TRUE, approx = FALSE, bw = bw)
 ## Bandwidth selection of approx local linear regression with kdtree
-h_kdapprox <- cv.llr(x, y, w , kdtree = TRUE , approx = TRUE) 
+h_kdapprox <- cv.llr(x, y, w , kdtree = TRUE , approx = TRUE, bw = bw) 
 }

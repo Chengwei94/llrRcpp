@@ -12,7 +12,7 @@ gcv.llr(
   approx = FALSE,
   epsilon = 0.05,
   N_min = 1,
-  bw = seq(0.05, 0.4, by = 0.01)
+  bw
 )
 }
 \arguments{
@@ -39,17 +39,20 @@ returns a single or numeric vector of \code{bw} that gives the smallest mean squ
 Bandwidth selection using generalized cross validation
 }
 \examples{
-   
+  
+\dontrun{
 n <- 1000
 x <- seq(0,10,length.out = n)
 x1 <- rnorm(n,0,0.2)
 y <- sin(x) + x1
 w <- rep(1/n, n)
+bw <- seq(0.02,0.4, by =0.01)
 binned <- bin(x, y, bins=400, w)
 ## Bandwidth selection of binned data
-h_bin <- gcv.llr(binned$x, binned$y, binned$weight)
+h_bin <- gcv.llr(binned$x, binned$y, binned$weight, bw = bw)
 ## Bandwidth selection of exact local linear regression 
-h_exact <- gcv.llr(x, y, w)
+h_exact <- gcv.llr(x, y, w, bw = bw)
 ## Bandwidth selection of approx local linear regression with kdtree
-h_kdapprox <- gcv.llr(x, y, w, approx = TRUE) 
+h_kdapprox <- gcv.llr(x, y, w, approx = TRUE, bw = bw) 
+}
 }

@@ -7,11 +7,33 @@
 #include <iostream>   
 #include <random>
 #include <stack>
-
+#include <chrono>
+  
 // [[Rcpp::plugins(cpp14)]]
 // [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::plugins(openmp)]]
 
+//Constructor for kdtree
+kdtree::kdtree(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt,  int N_min) {   // command to create kd tree 
+  
+  Eigen::MatrixXd XY_mat(X.rows(), X.cols() + 2);
+  XY_mat << X, Y, wt; 
+  all_point_t XY_arr = XYmat_to_XYarr(XY_mat) ;  
+  
+  size_t len = XY_arr.size(); 
+  
+  std::vector<double> dim_max_(X.cols());        
+  std::vector<double> dim_min_(X.cols()); 
+  
+  for(size_t i=0; i < X.cols(); i++) { 
+    dim_max_.at(i) = X.col(i).maxCoeff(); 
+    dim_min_.at(i) = X.col(i).minCoeff(); 
+  } 
+  
+  root = build_tree(XY_arr.begin(), XY_arr.end(), 1, 1, N_min, len, dim_max_, dim_min_);
+}
+
+// Function for building tree, storing max_dim , min_dim, split dimension, split point, length at each node.
 std::unique_ptr<kdtree::kdnode> kdtree::build_tree(all_point_t::iterator start, all_point_t::iterator end, 
                                            int split_d, double split_v, int N_min, size_t len,
                                            std::vector<double> dim_max_, std::vector<double> dim_min_){
@@ -99,26 +121,9 @@ std::unique_ptr<kdtree::kdnode> kdtree::build_tree(all_point_t::iterator start, 
   return newnode;    
 }
 
-kdtree::kdtree(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt,  int N_min) {   // command to create kd tree 
-  
-  Eigen::MatrixXd XY_mat(X.rows(), X.cols() + 2);
-  XY_mat << X, Y, wt; 
-  all_point_t XY_arr = XYmat_to_XYarr(XY_mat) ;  
-  
-  size_t len = XY_arr.size(); 
-  
-  std::vector<double> dim_max_(X.cols());        
-  std::vector<double> dim_min_(X.cols()); 
-  
-  for(size_t i=0; i < X.cols(); i++) { 
-    dim_max_.at(i) = X.col(i).maxCoeff(); 
-    dim_min_.at(i) = X.col(i).minCoeff(); 
-  } 
-
-  root = build_tree(XY_arr.begin(), XY_arr.end(), 1, 1, N_min, len, dim_max_, dim_min_);   // using build_tree to build the entire tree 
-}
-
-all_point_t XYmat_to_XYarr(const Eigen::MatrixXd& XY_mat){    // conversion to vector form 
+// Function to change from matrix form to std::vector form since that row-wise sorting is not 
+// supported in Eigen
+all_point_t XYmat_to_XYarr(const Eigen::MatrixXd& XY_mat){    
   std::vector<Eigen::VectorXd> XY_arr; 
   Eigen::MatrixXd XY_temp(XY_mat.rows(), XY_mat.cols()+1); 
   XY_temp.rightCols(XY_mat.cols()) = XY_mat; 
@@ -130,6 +135,7 @@ all_point_t XYmat_to_XYarr(const Eigen::MatrixXd& XY_mat){    // conversion to v
   return XY_arr; 
 }
 
+// evaluation of kernel
 inline double eval_kernel(int kcode, const double& z, double w)
 {
   double tmp;
@@ -198,6 +204,7 @@ inline double eval_kernel(int kcode, const double& z)
   return 0;
 }
 
+// calculate max weight and min weight between the query point and its bounding box
 std::pair<double,double> calculate_weight(int kcode, const Eigen::VectorXd& X_query, const std::vector<double>& dim_max, 
                                           const std::vector<double>& dim_min, const Eigen::VectorXd& h) {  // weight calculation of point
   if(dim_max.size()!= X_query.size()){
@@ -205,27 +212,21 @@ std::pair<double,double> calculate_weight(int kcode, const Eigen::VectorXd& X_qu
     //    throw std::exception(); 
   }
   double w_max = 1;
-  double w_min = 1; 
-  double dis_max = 0; 
-  double dis_min = 0;
+  double w_min = 1;
   
   for(int i=0; i < dim_max.size(); i++) { 
     if (X_query(i) <= dim_max.at(i) && X_query(i) >= dim_min.at(i)) {
-      dis_max = std::max(abs(dim_max.at(i) - X_query(i)), abs(dim_min.at(i) - X_query(i)));    // dis_max = which ever dim is further
-      dis_min = 0;                                                                             
-      w_min *= eval_kernel(kcode, dis_max/h(i)) / h(i);    // kern weight = multiplication of weight of each dim 
+      double dis_max = std::max(abs(dim_max.at(i) - X_query(i)), abs(dim_min.at(i) - X_query(i)));    // dis_max = which ever dim is further
+      double dis_min = 0;                                                                             
+      w_min *= eval_kernel(kcode, dis_max/h(i)) / h(i);    
       w_max *= eval_kernel(kcode, dis_min/h(i)) / h(i);
-      
     }
-    else if (abs(X_query(i) - dim_max.at(i)) > abs(X_query(i) - dim_min.at(i))){
-      dis_max = X_query(i) - dim_max.at(i);
-      dis_min = X_query(i) - dim_min.at(i);
-      w_min *= eval_kernel(kcode, dis_max/h(i)) / h(i);
-      w_max *= eval_kernel(kcode, dis_min/h(i)) / h(i); 
-    }
+    
     else{
-      dis_max = X_query(i) - dim_min.at(i);
-      dis_min = X_query(i) - dim_max.at(i); 
+      double dist1 = abs(X_query(i) - dim_min.at(i));
+      double dist2 = abs(X_query(i) - dim_max.at(i));
+      double dis_min = std::min(dist1, dist2);
+      double dis_max = std::max(dist1, dist2);
       w_min *= eval_kernel(kcode, dis_max/h(i)) / h(i); 
       w_max *= eval_kernel(kcode, dis_min/h(i)) / h(i); 
     }
@@ -233,6 +234,7 @@ std::pair<double,double> calculate_weight(int kcode, const Eigen::VectorXd& X_qu
   return std::make_pair(w_max, w_min); 
 }
 
+// Function to get exact XtX XtY based on condition on w_max and w_min is equal
 std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::VectorXd& X_query,  // to obtain the exact XtXXtY from tree 
                                                                const std::vector<double>& dim_max, 
                                                                const std::vector<double>& dim_min, 
@@ -241,7 +243,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
                                                                int kcode){
   
   std::pair<double,double> w_maxmin;
-  std::stack <kdtree::kdnode*> storage; 
+  std::stack<kdtree::kdnode*> storage; 
   auto curr = root.get(); 
   Eigen::MatrixXd XtX = Eigen::MatrixXd::Zero(curr->XtX.rows() , curr->XtX.cols()); 
   Eigen::VectorXd XtY = Eigen::MatrixXd::Zero(curr->XtY.rows() , curr->XtY.cols());
@@ -277,7 +279,8 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
   return std::make_pair(XtX,XtY); 
 }
 
-std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen::VectorXd& X_query,    // to obtain the approx XtXXtY from tree 
+//Function to get approx XtX XtY from the tree choosing based on the condition w_max - w_min <= 2 * current_weight + w_min * nodes below
+std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen::VectorXd& X_query,    
                                                                      const std::vector<double>& dim_max,
                                                                      const std::vector<double>& dim_min, 
                                                                      std::unique_ptr<kdtree::kdnode>& root,
@@ -294,15 +297,17 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen
   w_maxmin = calculate_weight(kcode, X_query, dim_max, dim_min, h);
   double w_max = w_maxmin.first; 
   double w_min = w_maxmin.second;
+  
   double weight_sf = 0; 
   
-  while (( curr->left_child.get() != nullptr && w_max-w_min > 2*epsilon*(weight_sf + curr->n_below*w_min)) || storage.empty() == false  ){
-    while (w_max - w_min > 2*epsilon*(weight_sf + curr->n_below*w_min) && curr->left_child.get() != nullptr ){   // if condition fufilled        
+  while ((w_max-w_min > 2*epsilon*(weight_sf + curr->n_below*w_min)) || storage.empty() == false  ){
+    while (w_max - w_min > 2*epsilon*(weight_sf + curr->n_below*w_min)){   // if condition fufilled        
       storage.push(curr);
       curr = curr->left_child.get();  
       w_maxmin = calculate_weight(kcode, X_query, curr->dim_max, curr->dim_min, h);  // calculate max and min weight 
       w_max = w_maxmin.first;                      
-      w_min = w_maxmin.second; 
+      w_min = w_maxmin.second;
+      
       if(w_max - w_min <= 2 * epsilon * (weight_sf + curr->n_below*w_min)){ 
         double weight = 0.5*(w_max + w_min);
         weight_sf += weight;  
@@ -310,13 +315,13 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen
         XtY += weight * curr->XtY; 
       }           
     }
-    
     curr = storage.top(); 
     storage.pop(); 
     curr = curr->right_child.get(); 
     w_maxmin = calculate_weight(kcode, X_query, curr->dim_max, curr->dim_min, h);  // calculate max and min weight 
     w_max = w_maxmin.first;   
-    w_min = w_maxmin.second; 
+    w_min = w_maxmin.second;
+    
     if(w_max - w_min <= 2 * epsilon * (weight_sf + curr->n_below*w_min)){ 
       double weight = 0.5*(w_max + w_min);
       weight_sf += weight;  
@@ -327,6 +332,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen
   return std::make_pair(XtX,XtY); 
 }
 
+// Function to find the XtXXtY from the kdtree
 std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::find_XtXXtY(const Eigen::VectorXd& X_query, 
                                                                  int method, 
                                                                 double epsilon, 
@@ -346,6 +352,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::find_XtXXtY(const Eigen::Vec
   }
 }
 
+// Function to form XtX into the one which we can use for local linear regression
 Eigen::MatrixXd form_ll_XtX(const Eigen::MatrixXd& XtX, const Eigen::VectorXd& X_query){  //steps to form the local linear XtX(with query pts)
   Eigen::MatrixXd extra_XtX(XtX.rows(), XtX.cols()); 
   Eigen::MatrixXd ll_XtX(XtX.rows(),XtX.cols()); 
@@ -359,7 +366,7 @@ Eigen::MatrixXd form_ll_XtX(const Eigen::MatrixXd& XtX, const Eigen::VectorXd& X
     return ll_XtX; 
 }
 
-
+// Function to form XtY into the one which we can use for local linear regression
 Eigen::VectorXd form_ll_XtY(const Eigen::VectorXd& XtY, const Eigen::VectorXd& X_query){ //steps to form the local linear XtY(with query pts)
   Eigen::VectorXd extra_XtY = Eigen::VectorXd::Zero((XtY.size()));
   Eigen::VectorXd ll_XtY(XtY.size());
@@ -370,9 +377,10 @@ Eigen::VectorXd form_ll_XtY(const Eigen::VectorXd& XtY, const Eigen::VectorXd& X
 
 Eigen::VectorXd calculate_beta(const Eigen::MatrixXd &XtX, const Eigen::VectorXd &XtY) {
   Eigen::LDLT<Eigen::MatrixXd> LDLT_XtX(XtX);
-  return(LDLT_XtX.solve(XtY));;  //first term gives the predicted value
+  return(LDLT_XtX.solve(XtY));  // returns b = (XTX)^-1(XTY)
 }
 
+// Function to find the max weight possible for a given node
 double max_weight(int kcode, const Eigen::VectorXd &h, double wt){ //return max_weight possible of a point 
   double w_max = 1; 
   for(size_t i =0; i < h.size(); i++){
@@ -459,6 +467,7 @@ Eigen::VectorXd llr2d_cpp (const Eigen::MatrixXd &X, const Eigen::VectorXd &Y, c
   return beta_0; 
 }
 
+// Use to check the kdexact tree
 // [[Rcpp::export]]
 Eigen::VectorXd llr_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::MatrixXd& X_pred,
                         int kcode, Eigen::VectorXd h, const Eigen::VectorXd &wt){
@@ -589,17 +598,16 @@ Rcpp::List bin2d_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, int bin
                             Rcpp::Named("x") = xgrid);
 }
 
-
 // [[Rcpp::export]]
-Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd &Y, const Eigen::MatrixXd& xpred, const Eigen::VectorXd& wt, int method, int kcode,
+Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd &X, const Eigen::VectorXd &Y, const Eigen::MatrixXd& X_pred, const Eigen::VectorXd& wt, int method, int kcode,
                          double epsilon, const Eigen::VectorXd& h, int N_min){
-
-    Eigen::VectorXd beta_0(xpred.rows());
+    
+    Eigen::VectorXd beta_0(X_pred.rows());
     kdtree tree(X, Y, wt, N_min);
     
     #pragma omp parallel for schedule(static)
-    for (size_t i = 0; i < xpred.rows(); i++) {
-      std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(xpred.row(i), method, epsilon, h, kcode);
+    for (size_t i = 0; i < X_pred.rows(); i++) {
+      std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(X_pred.row(i), method, epsilon, h, kcode);
       Eigen::VectorXd beta = calculate_beta(XtXXtY.first, XtXXtY.second);
       beta_0(i) = beta(0);
     }
@@ -608,9 +616,8 @@ Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd &Y, con
 
 
 // [[Rcpp::export]]
-Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, Eigen::VectorXd wt, int method, int kcode,
+Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode,
                         double epsilon, const Eigen::MatrixXd& bw, int N_min){
-
 
   Eigen::VectorXd bw_opt;
   Eigen::MatrixXd I = Eigen::MatrixXd::Identity(X.cols()+1, X.cols()+1);
@@ -618,17 +625,13 @@ Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, Eig
   kdtree tree(X, Y, wt, N_min);
 
   double SSE_opt = -1;
-  double SSE;
-
-  Eigen::VectorXd h = bw.row(0);
-  Eigen::VectorXd w_points(X.size());
 
   for (int i = 0; i< bw.rows(); i++) {            //calculating SSE for subsequent bandwidth
-    h = bw.row(i);
-    SSE = 0;
+    Eigen::VectorXd h = bw.row(i);
+    double SSE = 0;
       
-   // #pragma omp parallel for reduction(+: SSE)
-    for (int j = 0; j < X.size(); j++) {
+    #pragma omp parallel for reduction(+:SSE) schedule(static)
+    for (int j = 0; j < X.rows(); j++) {
       double w = max_weight(kcode, h, wt(j)); 
       std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(X.row(j), method, epsilon, h, kcode);
       Eigen::VectorXd beta = calculate_beta(XtXXtY.first, XtXXtY.second);
@@ -638,7 +641,6 @@ Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, Eig
       if (w_point == 1){
         Rcpp::stop("Choose a larger bandwidth");
       }
-      w_points(j) = w_point;
       SSE += pow((beta(0) - Y(j)) / (1-w_point), 2);
     }
     if (SSE_opt == -1 && SSE >= 0){
@@ -650,7 +652,6 @@ Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, Eig
       bw_opt = h;
     }
   }
-  //return w_points;
   return bw_opt;
 }
 

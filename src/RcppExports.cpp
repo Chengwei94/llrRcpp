@@ -83,87 +83,39 @@ BEGIN_RCPP
 END_RCPP
 }
 // llrt_cpp
-Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::MatrixXd& xpred, const Eigen::VectorXd& wt, int method, int kcode, double epsilon, const Eigen::VectorXd& h, int N_min);
-RcppExport SEXP _llrRcpp_llrt_cpp(SEXP XSEXP, SEXP YSEXP, SEXP xpredSEXP, SEXP wtSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP hSEXP, SEXP N_minSEXP) {
+Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::MatrixXd& X_pred, const Eigen::VectorXd& wt, int method, int kcode, double epsilon, const Eigen::VectorXd& h, int N_min);
+RcppExport SEXP _llrRcpp_llrt_cpp(SEXP XSEXP, SEXP YSEXP, SEXP X_predSEXP, SEXP wtSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP hSEXP, SEXP N_minSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type xpred(xpredSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X_pred(X_predSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type wt(wtSEXP);
     Rcpp::traits::input_parameter< int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type h(hSEXP);
     Rcpp::traits::input_parameter< int >::type N_min(N_minSEXP);
-    rcpp_result_gen = Rcpp::wrap(llrt_cpp(X, Y, xpred, wt, method, kcode, epsilon, h, N_min));
+    rcpp_result_gen = Rcpp::wrap(llrt_cpp(X, Y, X_pred, wt, method, kcode, epsilon, h, N_min));
     return rcpp_result_gen;
 END_RCPP
 }
 // tgcv_cpp
-Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, Eigen::VectorXd wt, int method, int kcode, double epsilon, const Eigen::MatrixXd& bw, int N_min);
+Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode, double epsilon, const Eigen::MatrixXd& bw, int N_min);
 RcppExport SEXP _llrRcpp_tgcv_cpp(SEXP XSEXP, SEXP YSEXP, SEXP wtSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP bwSEXP, SEXP N_minSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< Eigen::VectorXd >::type wt(wtSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type wt(wtSEXP);
     Rcpp::traits::input_parameter< int >::type method(methodSEXP);
     Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
     Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
     Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type bw(bwSEXP);
     Rcpp::traits::input_parameter< int >::type N_min(N_minSEXP);
     rcpp_result_gen = Rcpp::wrap(tgcv_cpp(X, Y, wt, method, kcode, epsilon, bw, N_min));
-    return rcpp_result_gen;
-END_RCPP
-}
-// csmoothmean
-Eigen::MatrixXd csmoothmean(const Eigen::Map<Eigen::VectorXd>& x, const Eigen::Map<Eigen::VectorXd>& z, const Eigen::Map<Eigen::VectorXd>& w, const double h, const std::string kernel, const int d, Eigen::Map<Eigen::VectorXd>& newx);
-RcppExport SEXP _llrRcpp_csmoothmean(SEXP xSEXP, SEXP zSEXP, SEXP wSEXP, SEXP hSEXP, SEXP kernelSEXP, SEXP dSEXP, SEXP newxSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type x(xSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type z(zSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type w(wSEXP);
-    Rcpp::traits::input_parameter< const double >::type h(hSEXP);
-    Rcpp::traits::input_parameter< const std::string >::type kernel(kernelSEXP);
-    Rcpp::traits::input_parameter< const int >::type d(dSEXP);
-    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXd>& >::type newx(newxSEXP);
-    rcpp_result_gen = Rcpp::wrap(csmoothmean(x, z, w, h, kernel, d, newx));
-    return rcpp_result_gen;
-END_RCPP
-}
-// crawcov
-Rcpp::List crawcov(const Rcpp::List& Lt, const Rcpp::List& Ly, const Eigen::VectorXd weig);
-RcppExport SEXP _llrRcpp_crawcov(SEXP LtSEXP, SEXP LySEXP, SEXP weigSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type Lt(LtSEXP);
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type Ly(LySEXP);
-    Rcpp::traits::input_parameter< const Eigen::VectorXd >::type weig(weigSEXP);
-    rcpp_result_gen = Rcpp::wrap(crawcov(Lt, Ly, weig));
-    return rcpp_result_gen;
-END_RCPP
-}
-// csmoothcov
-Eigen::MatrixXd csmoothcov(const Eigen::Map<Eigen::VectorXd>& h, const std::string kernel, const Eigen::Map<Eigen::MatrixXd>& xy, const Eigen::Map<Eigen::MatrixXd>& z, const Eigen::Map<Eigen::VectorXd>& w, Eigen::Map<Eigen::VectorXd>& xgrid, Eigen::Map<Eigen::VectorXd>& ygrid, const double delta);
-RcppExport SEXP _llrRcpp_csmoothcov(SEXP hSEXP, SEXP kernelSEXP, SEXP xySEXP, SEXP zSEXP, SEXP wSEXP, SEXP xgridSEXP, SEXP ygridSEXP, SEXP deltaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type h(hSEXP);
-    Rcpp::traits::input_parameter< const std::string >::type kernel(kernelSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type xy(xySEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::MatrixXd>& >::type z(zSEXP);
-    Rcpp::traits::input_parameter< const Eigen::Map<Eigen::VectorXd>& >::type w(wSEXP);
-    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXd>& >::type xgrid(xgridSEXP);
-    Rcpp::traits::input_parameter< Eigen::Map<Eigen::VectorXd>& >::type ygrid(ygridSEXP);
-    Rcpp::traits::input_parameter< const double >::type delta(deltaSEXP);
-    rcpp_result_gen = Rcpp::wrap(csmoothcov(h, kernel, xy, z, w, xgrid, ygrid, delta));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -176,9 +128,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_llrRcpp_bin2d_cpp", (DL_FUNC) &_llrRcpp_bin2d_cpp, 4},
     {"_llrRcpp_llrt_cpp", (DL_FUNC) &_llrRcpp_llrt_cpp, 9},
     {"_llrRcpp_tgcv_cpp", (DL_FUNC) &_llrRcpp_tgcv_cpp, 8},
-    {"_llrRcpp_csmoothmean", (DL_FUNC) &_llrRcpp_csmoothmean, 7},
-    {"_llrRcpp_crawcov", (DL_FUNC) &_llrRcpp_crawcov, 3},
-    {"_llrRcpp_csmoothcov", (DL_FUNC) &_llrRcpp_csmoothcov, 8},
     {NULL, NULL, 0}
 };
 

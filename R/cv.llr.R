@@ -17,20 +17,23 @@
 #' y <- sin(x) + x1
 #' w <- rep(1/n, n)
 #' binned <- bin(x,y,bins=400, w)
+#' bw <- seq(0.02, 0.3, by = 0.02)
 #' ## Bandwidth selection of binned data
-#' h_bin <- cv.llr(binned$x, binned$y, binned$weight)
+#' h_bin <- cv.llr(binned$x, binned$y, binned$weight, bw = bw)
 #' ## Bandwidth selection of exact local linear regression
-#' h_exact <- cv.llr(x, y, w)
+#' h_exact <- cv.llr(x, y, w , bw = bw)
 #' ## Bandwidth selection of exact local linear regression with kdtree
-#' h_kdexact <- cv.llr(x, y, w, kdtree = TRUE, approx = FALSE)
+#' h_kdexact <- cv.llr(x, y, w, kdtree = TRUE, approx = FALSE, bw = bw)
 #' ## Bandwidth selection of approx local linear regression with kdtree
-#' h_kdapprox <- cv.llr(x, y, w , kdtree = TRUE , approx = TRUE) 
+#' h_kdapprox <- cv.llr(x, y, w , kdtree = TRUE , approx = TRUE, bw = bw) 
 #' @export
-cv.llr <- function(x, y, weight, kernel = "epanechnikov", bw = seq(0.05, 0.4, by=0.01), 
+cv.llr <- function(x, y, weight, kernel = "epanechnikov", bw, 
                      kdtree = FALSE, approx = FALSE, epsilon = 0.05, N_min = 1, k = 5){
   
   x <- as.matrix(x)
   y <- as.numeric(y) 
+  weight <- as.numeric(weight)
+  bw <- as.matrix(bw)
   
   xy <- cbind.data.frame(x, y, weight)
   xy <- xy[sample(nrow(xy)),]
@@ -39,8 +42,8 @@ cv.llr <- function(x, y, weight, kernel = "epanechnikov", bw = seq(0.05, 0.4, by
   MSE_opt <- -1
   h_opt <- -1
   TSE <- 0 
-  for (j in 1:length(bw)){
-    h <- bw[j]
+  for (j in 1:nrow(bw)){
+    h <- bw[j,]
     SSE <- 0
     for (i in 1:k){
       testIndexes <- which(folds==i,arr.ind=TRUE)
@@ -48,10 +51,10 @@ cv.llr <- function(x, y, weight, kernel = "epanechnikov", bw = seq(0.05, 0.4, by
       train <- xy[-testIndexes, ]
       test <- test[order(test[,1]), ]
       if (kdtree == FALSE){
-        ypred <- llr(train$x, train$y, test$x, kernel, h, train$weight)
+        ypred <- llr(train[,1:ncol(x)], train$y, test[,1:ncol(x)], kernel, h, train$weight)
       }
       else { 
-        ypred <- llr(train$x, train$y, test$x, kernel, h, train$weight, kdtree, approx, epsilon, N_min)
+        ypred <- llr(train[,1:ncol(x)], train$y, test[,1:ncol(x)], kernel, h, train$weight, kdtree, approx, epsilon, N_min)
       }
       
     SE <- (test$y - ypred$fitted)^2
