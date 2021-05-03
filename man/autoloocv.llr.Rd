@@ -36,6 +36,8 @@ autoloocv.llr(
 \item{control}{control parameter from R package  metaheuristicOpt}
 
 \item{algorithm}{algorithm parameter from R pacakage  metaheuristicOpt}
+
+\item{seed}{seed to use for algorithm}
 }
 \description{
 Auto selection of bandwidth using metaheuristic algorithms
