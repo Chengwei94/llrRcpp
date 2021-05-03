@@ -8,7 +8,7 @@ Maintainer: chengwei <e0002969@u.nus.edu>
 Description: This package provides an implementation of multivariate local linear regression using kd-tree implementation. Both an exact and approxiate algorithm for using the kd-tree are present. The package also provides a binned method for the implementation of up to 2d. 
 License: GPL (>= 2)
 Encoding: UTF-8
-Imports: Rcpp, methods
+Imports: Rcpp, methods, metaheuristicOpt
 LinkingTo: Rcpp, RcppEigen
 RoxygenNote: 7.1.1
 Suggests: 

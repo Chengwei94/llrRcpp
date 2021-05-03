@@ -14,7 +14,7 @@ llr(x, ...)
   y,
   xpred,
   kernel = "epanechnikov",
-  bw,
+  bandwidth,
   weight,
   kdtree = FALSE,
   approx = FALSE,
@@ -23,10 +23,10 @@ llr(x, ...)
   ...
 )
 
-\method{llr}{bin}(x, xpred, kernel = "epanechnikov", bw, ...)
+\method{llr}{bin}(x, xpred, kernel = "epanechnikov", bandwidth, ...)
 }
 \arguments{
-\item{x}{object from bin}
+\item{x}{bin object}
 
 \item{...}{further arguments to be passed}
 
@@ -36,7 +36,7 @@ llr(x, ...)
 
 \item{kernel}{kernel type used; supported are 'epanechnikov', "rectangular", "triangular", "quartic", "triweight", "tricube", "cosine", "gauss", "logistic".}
 
-\item{bw}{a numeric vector or single number of same dimension as \code{x}.}
+\item{bandwidth}{a numeric vector or single number of same dimension as \code{x}.}
 
 \item{weight}{a numeric vector of \code{length(x)} for weight of each data point.}
 
@@ -46,7 +46,7 @@ llr(x, ...)
 
 \item{epsilon}{margin of error allowed for llr approximation using kdtree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}.}
 
-\item{N_min}{minimum number of points stored in the kd-tree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}. Currently not available}
+\item{N_min}{minimum number of points stored in the kd-tree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}. Currently not in use.}
 }
 \value{
 returns a S3 object of class "llr" containing
@@ -67,12 +67,12 @@ y <- sin(x) + x1
 w <- rep(1 / n, n)
 binned <- bin(x, y, bins = 400, w)
 ## local linear regression for exact without kdtree
-llr_exact <- llr(x, y, x, bw = 0.2, weight = w)
+llr_exact <- llr(x, y, x, bandwidth = 0.2, weight = w)
 ## local linear regression for kdtree exact
-llr_kdexact <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE)
+llr_kdexact <- llr(x, y, x, bandwidth = 0.2, weight = w, kdtree = TRUE)
 ## local linear regression for kdtree approximation
-llr_kdapprox <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE, approx = TRUE)
+llr_kdapprox <- llr(x, y, x, bandwidth = 0.2, weight = w, kdtree = TRUE, approx = TRUE)
 ## local linear regression for data after binning.
-llr_bin <- llr(binned, x, bw = 0.2)
+llr_bin <- llr(binned, x, bandwidth = 0.2)
 }
 }

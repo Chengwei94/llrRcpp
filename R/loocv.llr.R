@@ -1,4 +1,4 @@
-#' Bandwidth selection using generalized cross validation
+#' Bandwidth selection using leave one out cross validation
 #' @param x a numeric vector or matrix of x data
 #' @param y a numeric vector of y data corresponding to \code{x} data
 #' @param weight a numeric vector of \code{length(x)} for weight of each data point.
@@ -25,7 +25,7 @@
 #' h_kdapprox <- gcv.llr(x, y, w, approx = TRUE, bandwidth = bandwidth)
 #' }
 #' @export
-gcv.llr <- function(x, y, weight, kernel = "epanechnikov", approx = FALSE, epsilon = 0.05,
+loocv.llr <- function(x, y, weight, kernel = "epanechnikov", approx = FALSE, epsilon = 0.05,
                     N_min = 1, bandwidth) {
   
   kernel <- match.arg(kernel)
@@ -76,6 +76,10 @@ gcv.llr <- function(x, y, weight, kernel = "epanechnikov", approx = FALSE, epsil
   wt <- as.numeric(weight)
   bandwidth <- data.frame(bandwidth)
   
+  if (ncol(x) > 1 && ncol(bandwidth) == 1) {
+    bandwidth <- t(bandwidth)
+  }
+  
   if (nrow(x) != length(y) || nrow(x) != length(wt)){
     stop('x, y and weight must have the same length')
   }
@@ -88,6 +92,10 @@ gcv.llr <- function(x, y, weight, kernel = "epanechnikov", approx = FALSE, epsil
   scale <- as.numeric(round(scale , 3))
   bandwidth1 <- mapply('*', bandwidth, scale)
   bandwidth1 <- as.matrix(bandwidth1)
+  
+  if (ncol(x) > 1 && ncol(bandwidth1) == 1) {
+    bandwidth1 <- t(bandwidth1)
+  }
 
   if (approx == FALSE) {
     results <- tgcv_cpp(x, y, wt, 1, kcode, epsilon, bandwidth1, N_min)
@@ -96,11 +104,11 @@ gcv.llr <- function(x, y, weight, kernel = "epanechnikov", approx = FALSE, epsil
     results <- tgcv_cpp(x, y, wt, 2, kcode, epsilon, bandwidth1, N_min)
   }
   
-  results$bw_opt <- results$bw_opt / scale
-  results$bandwidth <- bandwidth 
-  
-  if (any(results$bw_opt == 0)) {
-    stop("Choose a larger range of bandwidth")
-  }
+   results$bw_opt <- results$bw_opt / scale
+   results$bandwidth <- bandwidth 
+   
+   if (any(results$bw_opt == 0)) {
+     stop("Choose a larger range of bandwidth")
+   }
   results
 }

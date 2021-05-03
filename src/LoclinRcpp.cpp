@@ -378,7 +378,7 @@ Eigen::VectorXd form_ll_XtY(const Eigen::VectorXd& XtY, const Eigen::VectorXd& X
 double calculate_beta(const Eigen::MatrixXd &XtX, const Eigen::VectorXd &XtY) {
   Eigen::LLT<Eigen::MatrixXd> LLT_XtX(XtX);
   if (LLT_XtX.info() == Eigen::NumericalIssue){ 
-     return R_NaN;
+     return R_PosInf;
    }
   else{ 
 //  Eigen::VectorXd beta = XtX.ldlt().solve(XtY);
@@ -643,13 +643,19 @@ Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Ei
       Eigen::MatrixXd XtXi = XtX.ldlt().solve(I);
       double w_point = w * XtXi(0,0);
 //   Rcpp::Rcout << w_point << '\n';
-      if (w_point == 1){
+      if (w_point == 1 || beta_0 == R_PosInf){
         bwerror = true; 
       }
       SSE += pow((beta_0 - Y(j))/(1-w_point), 2);
     }
-    SSEs(i) = SSE;
-    if (SSE_opt == -1 && SSE > 0 && bwerror == false){
+    if (bwerror == true){
+      SSEs(i) = R_PosInf;
+    }
+    else { 
+      SSEs(i) = SSE;
+    }
+    
+    if (SSE_opt == -1 && bwerror == false){
       SSE_opt = SSE;
       bw_opt = h;
     }

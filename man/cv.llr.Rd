@@ -9,7 +9,7 @@ cv.llr(
   y,
   weight,
   kernel = "epanechnikov",
-  bw,
+  bandwidth,
   kdtree = FALSE,
   approx = FALSE,
   epsilon = 0.05,
@@ -26,7 +26,7 @@ cv.llr(
 
 \item{kernel}{kernel type used; supported are 'epanechnikov', "rectangular", "triangular", "quartic", "triweight", "tricube", "cosine", "gauss", "logistic". "sigmoid" and "silverman".}
 
-\item{bw}{a numeric vector or matrix of bandwidth considered for selection.}
+\item{bandwidth}{a numeric vector or matrix of bandwidth considered for selection.}
 
 \item{kdtree}{boolean flag: If \code{TRUE}, a kdtree is used for computation of local linear regression.}
 
@@ -39,25 +39,25 @@ cv.llr(
 \item{k}{number of folds used for cross validation}
 }
 \value{
-returns a single numeric value or vector of \code{bw} that gives the smallest mean square error from cross validation.
+returns a single numeric value or vector of \code{bandwidth} that gives the smallest mean square error from cross validation.
 }
 \description{
 Bandwidth selection using k-fold cross validation
 }
 \examples{
 n <- 1000
-x <- seq(0,10,length.out = n)
-x1 <- rnorm(n,0,0.2)
+x <- seq(0, 10, length.out = n)
+x1 <- rnorm(n, 0, 0.2)
 y <- sin(x) + x1
-w <- rep(1/n, n)
-binned <- bin(x,y,bins=400, w)
-bw <- seq(0.02, 0.3, by = 0.02)
+w <- rep(1 / n, n)
+binned <- bin(x, y, bins = 400, w)
+bandwidth <- seq(0.02, 0.3, by = 0.02)
 ## Bandwidth selection of binned data
-h_bin <- cv.llr(binned$x, binned$y, binned$weight, bw = bw)
+h_bin <- cv.llr(binned$x, binned$y, binned$weight, bandwidth = bandwidth)
 ## Bandwidth selection of exact local linear regression
-h_exact <- cv.llr(x, y, w , bw = bw)
+h_exact <- cv.llr(x, y, w, bandwidth = bandwidth)
 ## Bandwidth selection of exact local linear regression with kdtree
-h_kdexact <- cv.llr(x, y, w, kdtree = TRUE, approx = FALSE, bw = bw)
+h_kdexact <- cv.llr(x, y, w, kdtree = TRUE, approx = FALSE, bandwidth = bandwidth)
 ## Bandwidth selection of approx local linear regression with kdtree
-h_kdapprox <- cv.llr(x, y, w , kdtree = TRUE , approx = TRUE, bw = bw) 
+h_kdapprox <- cv.llr(x, y, w, kdtree = TRUE, approx = TRUE, bandwidth = bandwidth)
 }
