@@ -42,7 +42,7 @@ Auto selection of bandwidth using metaheuristic algorithms
 }
 \examples{
  
-\dontrun {
+\dontrun{
 n <- 1000
 x <- runif(n, 0 , 1)
 y <- sin(x) + rnorm(n, 0, 0.2)

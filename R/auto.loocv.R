@@ -9,8 +9,9 @@
 #' @param epsilon  margin of error allowed for llr approximation using kdtree. Only used when \code{approx = TRUE}.
 #' @param control control parameter from R package  metaheuristicOpt
 #' @param algorithm algorithm parameter from R pacakage  metaheuristicOpt
+#' @param seed seed to use for algorithm 
 #' @examples  
-#' \dontrun {
+#' \dontrun{
 #' n <- 1000
 #' x <- runif(n, 0 , 1)
 #' y <- sin(x) + rnorm(n, 0, 0.2)
