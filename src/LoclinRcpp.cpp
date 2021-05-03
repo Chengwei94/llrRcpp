@@ -1,4 +1,3 @@
-//#include <Eigen/Dense>
 #include "RcppEigen.h"
 #include "LoclinRcpp_types.h"
 #include "LoclinRcpp.h"
@@ -7,7 +6,10 @@
 #include <iostream>   
 #include <random>
 #include <stack>
-#include <chrono>
+#include <math.h>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
   
 // [[Rcpp::plugins(cpp14)]]
 // [[Rcpp::depends(RcppEigen)]]
@@ -425,6 +427,9 @@ Eigen::VectorXd llr1d_cpp(const Eigen::VectorXd& X, const Eigen::VectorXd& Y, co
        t1 += w * dif * Y(j+lb);
     }
      double beta = (s2*t0 - s1*t1)/(s0*s2 - pow(s1,2)); 
+     if (isnan(beta)){
+      beta = R_PosInf; 
+     } 
      beta_0(i) = beta;
   }
   return beta_0; 
@@ -634,7 +639,7 @@ Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Ei
     double SSE = 0;
     bool bwerror = false;
       
-//    #pragma omp parallel for reduction(+:SSE) schedule(static)
+    #pragma omp parallel for reduction(+:SSE) schedule(static)
     for (int j = 0; j < X.rows(); j++) {
       double w = max_weight(kcode, h, wt(j)); 
       std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(X.row(j), method, epsilon, h, kcode);
@@ -667,6 +672,7 @@ Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Ei
   return Rcpp::List::create(Rcpp::Named("bw_opt") = bw_opt, 
                             Rcpp::Named("SSE") = SSEs);
 }
+
 
 
 

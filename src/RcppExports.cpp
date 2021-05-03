@@ -119,6 +119,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// get_num_procs
+int get_num_procs();
+RcppExport SEXP _llrRcpp_get_num_procs() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(get_num_procs());
+    return rcpp_result_gen;
+END_RCPP
+}
+// set_num_threads
+int set_num_threads(int threads);
+RcppExport SEXP _llrRcpp_set_num_threads(SEXP threadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type threads(threadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(set_num_threads(threads));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_llrRcpp_llr1d_cpp", (DL_FUNC) &_llrRcpp_llr1d_cpp, 6},
@@ -128,6 +149,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_llrRcpp_bin2d_cpp", (DL_FUNC) &_llrRcpp_bin2d_cpp, 4},
     {"_llrRcpp_llrt_cpp", (DL_FUNC) &_llrRcpp_llrt_cpp, 9},
     {"_llrRcpp_tgcv_cpp", (DL_FUNC) &_llrRcpp_tgcv_cpp, 8},
+    {"_llrRcpp_get_num_procs", (DL_FUNC) &_llrRcpp_get_num_procs, 0},
+    {"_llrRcpp_set_num_threads", (DL_FUNC) &_llrRcpp_set_num_threads, 1},
     {NULL, NULL, 0}
 };
 

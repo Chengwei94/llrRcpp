@@ -29,3 +29,18 @@ tgcv_cpp <- function(X, Y, wt, method, kcode, epsilon, bw, N_min) {
     .Call(`_llrRcpp_tgcv_cpp`, X, Y, wt, method, kcode, epsilon, bw, N_min)
 }
 
+#' Get number of processors
+#' @return number of processors 
+#' @export
+get_num_procs <- function() {
+    .Call(`_llrRcpp_get_num_procs`)
+}
+
+#' Set number of threads to use 
+#' @param threads number of threads to use 
+#' @return number of threads set 
+#' @export
+set_num_threads <- function(threads) {
+    .Call(`_llrRcpp_set_num_threads`, threads)
+}
+

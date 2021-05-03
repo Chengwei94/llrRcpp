@@ -42,7 +42,9 @@ autoloocv.llr <- function(x, y, weight, kernel = "epanechnikov", bw_range = c(0.
   best_SSE <- metaheuristicOpt::metaOpt(loss_function, optimType="MIN", algorithm=algorithm, numvar,
                            rangevar, control, seed)
   
-  best_SSE
+  if(best_SSE$optimumValue == Inf){
+    stop("Convergence failed, choose a larger bandwidth or use workers")
+  }
   return (list('bw_opt' = best_SSE$result, 'SSE' = best_SSE$optimumValue))
 }
 

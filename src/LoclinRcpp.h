@@ -1,4 +1,3 @@
-#pragma once
 #include "RcppEigen.h"
 #include <memory> 
 #include <vector>
