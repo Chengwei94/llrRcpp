@@ -13,7 +13,7 @@ double eval_kernel(int kcode, const double& z, double w);
 std::pair<double, double> calculate_weight(int kcode, const Eigen::VectorXd& X_query, const std::vector<double>& dim_max, const std::vector<double>& dim_min , const Eigen::VectorXd& h); 
 Eigen::MatrixXd form_ll_XtX(const Eigen::MatrixXd& XtX, const Eigen::VectorXd& X_query ); 
 Eigen::VectorXd form_ll_XtY(const Eigen::VectorXd& XtY , const Eigen::VectorXd& X_query);
-Eigen::VectorXd calculate_beta(const Eigen::MatrixXd& XtX, const Eigen::VectorXd& XtY);
+double calculate_beta(const Eigen::MatrixXd& XtX, const Eigen::VectorXd& XtY);
 std::pair<Eigen::VectorXd, double> calculate_beta_XtXinv(int kcode, const Eigen::MatrixXd &XtX, const Eigen::MatrixXd &XtY);
 double max_weight(int kcode, const Eigen::VectorXd&h);
 
@@ -28,5 +28,5 @@ Eigen::VectorXd llr_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, cons
                         int kcode, Eigen::VectorXd h, const Eigen::VectorXd &wt);
 Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd &Y, const Eigen::MatrixXd& xpred, const Eigen::VectorXd& wt, int method, int kcode,
                          double epsilon, const Eigen::VectorXd& h, int N_min);
-Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode,
+Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode,
                          double epsilon, const Eigen::MatrixXd& bw, int N_min);

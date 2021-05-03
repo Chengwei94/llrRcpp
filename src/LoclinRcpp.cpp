@@ -375,11 +375,17 @@ Eigen::VectorXd form_ll_XtY(const Eigen::VectorXd& XtY, const Eigen::VectorXd& X
   return ll_XtY;
 }
 
-Eigen::VectorXd calculate_beta(const Eigen::MatrixXd &XtX, const Eigen::VectorXd &XtY) {
-  Eigen::LDLT<Eigen::MatrixXd> LDLT_XtX(XtX);
-  return(LDLT_XtX.solve(XtY));  // returns b = (XTX)^-1(XTY)
+double calculate_beta(const Eigen::MatrixXd &XtX, const Eigen::VectorXd &XtY) {
+  Eigen::LLT<Eigen::MatrixXd> LLT_XtX(XtX);
+  if (LLT_XtX.info() == Eigen::NumericalIssue){ 
+     return R_NaN;
+   }
+  else{ 
+//  Eigen::VectorXd beta = XtX.ldlt().solve(XtY);
+    Eigen::VectorXd beta = LLT_XtX.solve(XtY); // returns b = (XTX)^-1(XTY)
+    return (beta(0));
+   }
 }
-
 // Function to find the max weight possible for a given node
 double max_weight(int kcode, const Eigen::VectorXd &h, double wt){ //return max_weight possible of a point 
   double w_max = 1; 
@@ -461,8 +467,7 @@ Eigen::VectorXd llr2d_cpp (const Eigen::MatrixXd &X, const Eigen::VectorXd &Y, c
         t(2) += w * x2 * Y(j);
       }
     }
-    Eigen::VectorXd beta = calculate_beta(s, t);
-    beta_0(i) = beta(0);
+    beta_0(i) = calculate_beta(s, t);
   }
   return beta_0; 
 }
@@ -494,8 +499,7 @@ Eigen::VectorXd llr_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, cons
       }
     } 
     s.triangularView<Eigen::Lower>() = s.transpose();
-    Eigen::VectorXd beta = calculate_beta(s, t);
-    beta_0(i) = beta(0);
+    beta_0(i) = calculate_beta(s, t);
   }
   return beta_0; 
 }
@@ -608,51 +612,54 @@ Eigen::VectorXd llrt_cpp(const Eigen::MatrixXd &X, const Eigen::VectorXd &Y, con
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < X_pred.rows(); i++) {
       std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(X_pred.row(i), method, epsilon, h, kcode);
-      Eigen::VectorXd beta = calculate_beta(XtXXtY.first, XtXXtY.second);
-      beta_0(i) = beta(0);
+      beta_0(i) = calculate_beta(XtXXtY.first, XtXXtY.second);
     }
     return beta_0; 
 } 
 
 
 // [[Rcpp::export]]
-Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode,
+Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode,
                         double epsilon, const Eigen::MatrixXd& bw, int N_min){
 
-  Eigen::VectorXd bw_opt;
+  Eigen::VectorXd bw_opt = Eigen::VectorXd::Zero(bw.cols());
   Eigen::MatrixXd I = Eigen::MatrixXd::Identity(X.cols()+1, X.cols()+1);
-  
-  kdtree tree(X, Y, wt, N_min);
+  Eigen::VectorXd SSEs(bw.rows());
 
+  kdtree tree(X, Y, wt, N_min);
   double SSE_opt = -1;
 
   for (int i = 0; i< bw.rows(); i++) {            //calculating SSE for subsequent bandwidth
     Eigen::VectorXd h = bw.row(i);
     double SSE = 0;
+    bool bwerror = false;
       
     #pragma omp parallel for reduction(+:SSE) schedule(static)
     for (int j = 0; j < X.rows(); j++) {
       double w = max_weight(kcode, h, wt(j)); 
       std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(X.row(j), method, epsilon, h, kcode);
-      Eigen::VectorXd beta = calculate_beta(XtXXtY.first, XtXXtY.second);
-      Eigen::MatrixXd XtX = XtXXtY.first; 
-      Eigen::MatrixXd XtXi = XtX.ldlt().solve(I); 
+      double beta_0 = calculate_beta(XtXXtY.first, XtXXtY.second);
+      Eigen::MatrixXd XtX = XtXXtY.first;
+      Eigen::MatrixXd XtXi = XtX.ldlt().solve(I);
       double w_point = w * XtXi(0,0);
+//   Rcpp::Rcout << w_point << '\n';
       if (w_point == 1){
-        Rcpp::stop("Choose a larger bandwidth");
+        bwerror = true; 
       }
-      SSE += pow((beta(0) - Y(j)) / (1-w_point), 2);
+      SSE += pow((beta_0 - Y(j))/(1-w_point), 2);
     }
-    if (SSE_opt == -1 && SSE >= 0){
+    SSEs(i) = SSE;
+    if (SSE_opt == -1 && SSE > 0 && bwerror == false){
       SSE_opt = SSE;
       bw_opt = h;
     }
-    else if (SSE <= SSE_opt) {
+    else if (SSE <= SSE_opt && bwerror == false) {
       SSE_opt = SSE;
       bw_opt = h;
     }
   }
-  return bw_opt;
+  return Rcpp::List::create(Rcpp::Named("bw_opt") = bw_opt, 
+                            Rcpp::Named("SSE") = SSEs);
 }
 
 

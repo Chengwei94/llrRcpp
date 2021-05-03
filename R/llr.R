@@ -15,12 +15,12 @@ llr <- function(x, ...) UseMethod("llr")
 #' @param y a numeric vector of y data corresponding to \code{x}.
 #' @param xpred a numeric vector or matrix of same dimension as \code{x}. x values to be predicted.
 #' @param kernel kernel type used; supported are 'epanechnikov', "rectangular", "triangular", "quartic", "triweight", "tricube", "cosine", "gauss", "logistic".
-#' @param bw a numeric vector or single number of same dimension as \code{x}.
+#' @param bandwidth a numeric vector or single number of same dimension as \code{x}.
 #' @param weight a numeric vector of \code{length(x)} for weight of each data point.
 #' @param kdtree boolean flag: If \code{TRUE}, kdtree is used for computation of local linear regression.
 #' @param approx boolean flag: If \code{TRUE}, kdtree approximation is used . Only used when \code{kdtree = TRUE}.
 #' @param epsilon margin of error allowed for llr approximation using kdtree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}.
-#' @param N_min minimum number of points stored in the kd-tree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}. Currently not available
+#' @param N_min minimum number of points stored in the kd-tree. Only used when both \code{kdtree = TRUE} and \code{approx = TRUE}. Currently not in use.
 #' @examples
 #' \dontrun{
 #' n <- 1000
@@ -30,19 +30,20 @@ llr <- function(x, ...) UseMethod("llr")
 #' w <- rep(1 / n, n)
 #' binned <- bin(x, y, bins = 400, w)
 #' ## local linear regression for exact without kdtree
-#' llr_exact <- llr(x, y, x, bw = 0.2, weight = w)
+#' llr_exact <- llr(x, y, x, bandwidth = 0.2, weight = w)
 #' ## local linear regression for kdtree exact
-#' llr_kdexact <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE)
+#' llr_kdexact <- llr(x, y, x, bandwidth = 0.2, weight = w, kdtree = TRUE)
 #' ## local linear regression for kdtree approximation
-#' llr_kdapprox <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE, approx = TRUE)
+#' llr_kdapprox <- llr(x, y, x, bandwidth = 0.2, weight = w, kdtree = TRUE, approx = TRUE)
 #' ## local linear regression for data after binning.
-#' llr_bin <- llr(binned, x, bw = 0.2)
+#' llr_bin <- llr(binned, x, bandwidth = 0.2)
 #' }
 #' @export
-llr.default <- function(x, y, xpred, kernel = "epanechnikov", bw, weight, kdtree = FALSE, approx = FALSE,
+llr.default <- function(x, y, xpred, kernel = "epanechnikov", bandwidth, weight, kdtree = FALSE, approx = FALSE,
                         epsilon = 0.05, N_min = 1, ...) {
   
   kernel <- match.arg(kernel)
+  
   switch(kernel,
     epanechnikov = {
       kcode <- 1
@@ -78,7 +79,6 @@ llr.default <- function(x, y, xpred, kernel = "epanechnikov", bw, weight, kdtree
       kcode <- 24
     }
   )
-
   # helper functions
   normalize <- function(x) {
     return(max(x) - min(x))
@@ -87,57 +87,75 @@ llr.default <- function(x, y, xpred, kernel = "epanechnikov", bw, weight, kdtree
   x <- as.matrix(x)
   y <- as.numeric(y)
   xpred <- as.matrix(xpred)
-  weight <- as.numeric(weight)
+  wt <- as.numeric(weight)
+  bandwidth <- as.numeric(bandwidth)
+
+  xpred <- as.matrix(xpred[order(xpred[, 1]), ])
+  if (ncol(x) > 1 && ncol(xpred) == 1) {
+     xpred <- t(xpred)
+  }
+  
+  if(ncol(x) != ncol(xpred)){
+    stop("Dimension of x and dimension of xpred is not the same ")
+  }
+  
+  if (nrow(x) != length(y) || nrow(x) != length(wt)){
+    stop('x, y and weight must have the same length')
+  }
+  
+  if(ncol(x) != length(bandwidth)) {
+    stop('x and bandwidth should have the same dimension')
+  }
+  #Ordering of the x, y, wt by the first column
+  df <- cbind(x, y, wt)
+  df <- df[order(df[, 1]), ]
+  x <- as.matrix(df[, 1:ncol(x)])
+  y <- as.numeric(df[, ncol(df) - 1])
+  wt <- as.numeric(df[, ncol(df)])
 
   scale <- apply(x, 2, FUN = normalize)
-  bw <- bw * scale
+  scale <- round(scale, 3)
+  bandwidth <- bandwidth * scale
 
-  xy <- cbind(x, y, weight)
-  xy <- xy[order(xy[, 1]), ]
-  xpred <- as.matrix(xpred[order(xpred[, 1]), ])
-  x <- as.matrix(xy[, 1:ncol(x)])
-  y <- as.numeric(xy[, ncol(xy) - 1])
-  wt <- as.numeric(xy[, ncol(xy)])
-
-
-  if (kdtree == TRUE) {
-    if (approx == FALSE) {
-      ypred <- llrt_cpp(x, y, xpred, wt, 1, kcode, epsilon, bw, N_min)
+  if (kdtree) {
+    if (!approx) {
+      ypred <- llrt_cpp(x, y, xpred, wt, 1, kcode, epsilon, bandwidth, N_min)
     }
-    else if (approx == TRUE) {
-      ypred <- llrt_cpp(x, y, xpred, wt, 2, kcode, epsilon, bw, N_min)
+    else {
+      ypred <- llrt_cpp(x, y, xpred, wt, 2, kcode, epsilon, bandwidth, N_min)
     }
   }
-
-  if (kdtree == FALSE) {
+  else {
     if (ncol(x) == 1) {
-      ypred <- llr1d_cpp(x, y, xpred, kcode, bw, wt)
+      ypred <- llr1d_cpp(x, y, xpred, kcode, bandwidth, wt)
     }
     if (ncol(x) == 2) {
-      ypred <- llr2d_cpp(x, y, xpred, kcode, bw, wt)
+      ypred <- llr2d_cpp(x, y, xpred, kcode, bandwidth, wt)
     }
     if (ncol(x) >= 3) {
-      ypred <- llr_cpp(x, y, xpred, kcode, bw, wt)
+      ypred <- llr_cpp(x, y, xpred, kcode, bandwidth, wt)
     }
   }
-
   results <- list("x" = xpred, "fitted" = ypred)
   class(results) <- "llr"
+  
   results
 }
 
 #' @rdname llr
 #' @method llr bin
-#' @param x object from bin 
-#' @param xpred a numeric vector or matrix of same dimension as \code{x}. x values to be predicted. 
+#' @param x bin object
+#' @param xpred a numeric vector or matrix of same dimension as \code{x}. x values to be predicted.
 #' @param kernel kernel type used; supported are 'epanechnikov', "rectangular", "triangular", "quartic", "triweight", "tricube", "cosine", "gauss", "logistic".
 #' @export
-llr.bin <- function(x, xpred, kernel = "epanechnikov", bw, ...) {
-  if (!inherits(x, "bin")) {
-    stop("function only works for objects of class bin")
-  }
+llr.bin <- function(x, xpred, kernel = "epanechnikov", bandwidth, ...) {
 
   kernel <- match.arg(kernel)
+  
+  if (!inherits(x, "bin")) {
+    stop("Function only works for objects of class bin")
+  }
+  
   switch(kernel,
     epanechnikov = {
       kcode <- 1
@@ -173,34 +191,59 @@ llr.bin <- function(x, xpred, kernel = "epanechnikov", bw, ...) {
       kcode <- 24
     }
   )
-
   # helper functions
   normalize <- function(x) {
     return(max(x) - min(x))
   }
-
-  x_ <- as.matrix(x$x)
-  y_ <- as.numeric(x$y)
-  wt_ <- as.numeric(x$weight)
-  xy <- data.frame(x_, y_, wt_)
-  xy <- xy[order(xy[, 1]), ]
-
+  
+  y <- as.numeric(x$y)
+  wt <- as.numeric(x$weight)
+  x <- as.matrix(x$x)
+  
   xpred <- as.matrix(xpred)
   xpred <- xpred[order(xpred[, 1]), ]
-  x_ <- as.matrix(xy[, 1:ncol(x_)])
-  y_ <- as.numeric(xy[, ncol(xy) - 1])
-  wt_ <- as.numeric(xy[, ncol(xy)])
-
-  scale <- apply(x_, 2, FUN = normalize)
-  bw <- bw * scale
-
-  if (ncol(x_) == 1) {
-    ypred <- llr1d_cpp(x_, y_, xpred, kcode, bw, wt_)
+  xpred <- as.matrix(xpred)
+  bandwidth <- as.numeric(bandwidth)
+  # as.matrix transform a 1 x c matrix to c x 1 matrix by default
+  if (ncol(x) > 1 && ncol(xpred == 1)) {
+   xpred <- t(xpred)
   }
-  if (ncol(x_) == 2) {
-    ypred <- llr2d_cpp(x_, y_, xpred, kcode, bw, wt_)
+  
+  if(ncol(x) != ncol(xpred)){
+    stop("Dimension of x and xpred should be the same ")
+  }
+  
+  if (nrow(x) != length(y) || nrow(x) != length(wt)){
+    stop('x, y and weight must have the same length')
+  }
+  
+  if(ncol(x) != length(bandwidth)) {
+    stop('x and bandwidth should have the same dimension')
+  }
+  
+  if (ncol(x) >= 3){
+    stop("Only supports object of 2d")
+  }
+  
+  df <- data.frame(x, y, wt)
+  df <- df[order(df[, 1]), ]
+  
+  x <- as.matrix(df[, 1:ncol(x)])
+  y <- as.numeric(df[, ncol(df) - 1])
+  wt <- as.numeric(df[, ncol(df)])
+
+  scale <- apply(x, 2, FUN = normalize)
+  scale <- round(scale, 3)
+  bandwidth <- bandwidth * scale
+
+  if (ncol(x) == 1) {
+    ypred <- llr1d_cpp(x, y, xpred, kcode, bandwidth, wt)
+  }
+  if (ncol(x) == 2) {
+    ypred <- llr2d_cpp(x, y, xpred, kcode, bandwidth, wt)
   }
   results <- list("x" = xpred, "fitted" = ypred)
   class(results) <- "llr"
+  
   results
 }

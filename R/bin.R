@@ -18,10 +18,17 @@
 #' binned <- bin(x,y,bins=400, w)
 #' @export
 bin <-  function(x, y, bins = 400, weight){  
+  
   x <- as.matrix(x)
   y <- as.numeric(y)
-  if ((ncol(x) > 2))  stop('x must be of dimension 1 or 2')
-  if (!identical(nrow(x),length(y))) stop('x and y must have the same length')
+  wt <- as.numeric(weight)
+  
+  if ((ncol(x) > 2)){ 
+    stop('x must be of dimension 1 or 2')
+  }
+  if (nrow(x) != length(y) || nrow(x) != length(wt)){
+    stop('x, y and weight must have the same length')
+  }
   
   if (ncol(x) == 1){
     r <- bin1d_cpp(x, y, bins, weight)
@@ -32,13 +39,12 @@ bin <-  function(x, y, bins = 400, weight){
   }
   
   class(r) <- "bin" 
-  
   index <- which(r$weight != 0)
+  
   r$x <- as.matrix(r$x)
   r$x <- r$x[index,]
-  r$y <- r$y[index]
-  r$weight <- r$weight[index]
-  
-  return (r)
+  r$y <- as.numeric(r$y[index])
+  r$weight <- as.numeric(r$weight[index])
+  r
 }
 

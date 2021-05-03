@@ -102,7 +102,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // tgcv_cpp
-Eigen::VectorXd tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode, double epsilon, const Eigen::MatrixXd& bw, int N_min);
+Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode, double epsilon, const Eigen::MatrixXd& bw, int N_min);
 RcppExport SEXP _llrRcpp_tgcv_cpp(SEXP XSEXP, SEXP YSEXP, SEXP wtSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP bwSEXP, SEXP N_minSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
