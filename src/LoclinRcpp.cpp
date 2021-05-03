@@ -634,7 +634,7 @@ Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Ei
     double SSE = 0;
     bool bwerror = false;
       
-    #pragma omp parallel for reduction(+:SSE) schedule(static)
+//    #pragma omp parallel for reduction(+:SSE) schedule(static)
     for (int j = 0; j < X.rows(); j++) {
       double w = max_weight(kcode, h, wt(j)); 
       std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(X.row(j), method, epsilon, h, kcode);
