@@ -10,7 +10,7 @@
 #' @param control control parameter from R package  metaheuristicOpt
 #' @param algorithm algorithm parameter from R pacakage  metaheuristicOpt
 #' @examples  
-#' \donotrun {
+#' \dontrun {
 #' n <- 1000
 #' x <- runif(n, 0 , 1)
 #' y <- sin(x) + rnorm(n, 0, 0.2)
