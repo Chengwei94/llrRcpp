@@ -24,7 +24,6 @@ test_that("Test that small bw_opt will give a warning",{
 })
 
 test_that("cv using kdtree and non-kdtree is the same", { 
-  
   x <- mcycle$times
   y <- mcycle$accel
   d <- data.frame(x,y)
@@ -36,3 +35,4 @@ test_that("cv using kdtree and non-kdtree is the same", {
   cv <- cv.llr(x, y, w, k = 5, bandwidth = bw, kdtree = TRUE)
   expect_equal(cv_tree, cv)
 })
+
