@@ -81,4 +81,12 @@ N = 5000
 
 ### Accuracy Results
 To be moved over 
+1D comparison
+https://github.com/Chengwei94/llrRcpp/blob/main/inst/1d.png
+
+3D comparison
+https://github.com/Chengwei94/llrRcpp/blob/main/inst/3d.png
+
+4D comparison
+https://github.com/Chengwei94/llrRcpp/blob/main/inst/4d.png
 
