@@ -80,12 +80,12 @@ N = 5000
 ![4](https://user-images.githubusercontent.com/61018420/103856248-4cc02a00-50ef-11eb-84a9-e701b283c7ac.jpg)  
 
 ### Accuracy Results
-1D comparison
+1D comparison  
 ![5](https://github.com/Chengwei94/llrRcpp/blob/main/inst/1d.png)
 
-3D comparison
+3D comparison  
 ![6](https://github.com/Chengwei94/llrRcpp/blob/main/inst/3d.png)
 
-4D comparison
+4D comparison  
 ![7](https://github.com/Chengwei94/llrRcpp/blob/main/inst/4d.png)
 
