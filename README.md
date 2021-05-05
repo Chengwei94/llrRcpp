@@ -1,7 +1,7 @@
 ## llrRcpp
 
 
-## Installation
+### Installation
 Install devtools 
 
 ```
@@ -9,11 +9,11 @@ library(devtools)
 devtools::install_github("Chengwei94/llrRcpp")
 ```
 
-# Details 
+### Details 
 Making use of a kd-tree for estimation of local linear estimation. There is an exact kd-tree and an approximate method. Added a metaheuristic approach
 to search for the best cv.
 
-# Functions
+### Functions
 1. Binning of data 
 ```
 ## Binning of 1D/2D data into grids 
@@ -66,7 +66,7 @@ h_auto <- autoloocv.llr(x, y, w)
 ## Bandwdith 
 h_auto <- autoloocv.llr(x, y, w, approx = TRUE) 
 ```
-# Visual Results (Red stand for bandwidth chosen with cv (approx), Yellow stand for bandwidth chosen gcv(exact), Blue stand for bandwidth chosen with gcv(approx)).
+### Visual Results (Red stand for bandwidth chosen with cv (approx), Yellow stand for bandwidth chosen gcv(exact), Blue stand for bandwidth chosen with gcv(approx)).
 x1 ~ N(0,0.3)  
 x ~ U(0,10)  
 y = sin(x) + x1  
@@ -79,7 +79,7 @@ N = 1000
 N = 5000  
 ![4](https://user-images.githubusercontent.com/61018420/103856248-4cc02a00-50ef-11eb-84a9-e701b283c7ac.jpg)  
 
-# Microbenchmark Speed Results (With similar bandwidth)  
+### Microbenchmark Speed Results (With similar bandwidth)  
 1. LLR speed (compared to Kernsmooth Locpoly(only for 1D) and loess)   
 A. 1D  
 y = sin(x) + x1  
@@ -93,25 +93,25 @@ N = 10000
 ![mb-3](https://user-images.githubusercontent.com/61018420/103856237-4a5dd000-50ef-11eb-8edb-9986f0763628.JPG)  
   
 
-# B. 2D  
+### B. 2D  
 N = 1000  
 ![mb-4](https://user-images.githubusercontent.com/61018420/103856239-4af66680-50ef-11eb-8035-0206a9f1b9eb.JPG)   
 N = 10000  
 ![mb-5](https://user-images.githubusercontent.com/61018420/103856240-4b8efd00-50ef-11eb-8213-1bda98f8b886.JPG)   
 
 
-# C. 3D   
+### C. 3D   
 N = 1000   
 ![bm-6](https://user-images.githubusercontent.com/61018420/103856250-4d58c080-50ef-11eb-85ea-2546f1997c39.JPG)  
 N = 10000  
 ![bm-7](https://user-images.githubusercontent.com/61018420/103856252-4df15700-50ef-11eb-9dd7-07630b62c623.JPG)  
 
-# 2. Cross-validation time  
+### 2. Cross-validation time  
 N = 1000    
 ![cv-1](https://user-images.githubusercontent.com/61018420/103857111-d15f7800-50f0-11eb-96db-6551d19c65ac.JPG)  
 N = 5000  
 ![cv-2](https://user-images.githubusercontent.com/61018420/103857164-e89e6580-50f0-11eb-8bd9-d963bfc5b49a.JPG)  
 
-# Accuracy Results
+### Accuracy Results
 To be moved over 
 
