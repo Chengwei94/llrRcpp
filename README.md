@@ -10,34 +10,38 @@ devtools::install_github("Chengwei94/llrRcpp")
 ```
 
 # Details 
-Making use of a kd-tree for estimation of local linear estimation. For both approx and exact method. 
+Making use of a kd-tree for estimation of local linear estimation. There is an exact kd-tree and an approximate method. Added a metaheuristic approach
+to search for the best cv.
 
 # Functions
-1. Binning of data
+1. Binning of data 
 ```
 ## Binning of 1D/2D data into grids 
-binned <- bin(x,y,bins=400, w)
+x <- runif(n, 0, 1) 
+xvar <- rnorm(n, 0, 0.5)
+y <- sin(2*pi*x) + xvar
+binned <- bin(x, y, bins=400, w)
 ## output x, y, and weights for the binned data. 
 ```
 2. Local linear regression   
 ```
 ## local linear regression for exact
-llr_exact <- llr(x, y, x, bw =0.2, weight = w)
+llr_exact <- llr(x, y, x, bandwidth =0.2, weight = w)
 ## local linear regression for kdtree exact
-llr_kdexact <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE)
+llr_kdexact <- llr(x, y, x, bandwidth = 0.2, weight = w, kdtree = TRUE)
 ## local linear regression for kdtree approximation
-llr_kdapprox <- llr(x, y, x, bw = 0.2, weight = w, kdtree = TRUE, approx = TRUE)
+llr_kdapprox <- llr(x, y, x, bandwidth = 0.2, weight = w, kdtree = TRUE, approx = TRUE)
 ## local linear regression for data after binning.
-llr_bin <- llr(binned, x , bw = 0.2)
+llr_bin <- llr(binned, x , bandwidth = 0.2)
 ```
-3. Generalized Cross validation 
+3. Leave one out Cross validation 
 ```
 ## Bandwidth selection of binned data
-h_bin <- gcv.llr(binned$x, binned$y, binned$weight)
+h_bin <- loocv.llr(binned$x, binned$y, binned$weight)
 ## Bandwidth selection of exact local linear regression
-h_exact <- gcv.llr(x, y, w)
+h_exact <- loocv.llr(x, y, w)
 ## Bandwidth selection of approx local linear regression with kdtree
-h_kdapprox <- gcv.llr(x, y, w, approx = TRUE)
+h_kdapprox <- loocv.llr(x, y, w, approx = TRUE)
 ```
 
 4. K-fold Cross validation 
@@ -51,6 +55,16 @@ h_exact <- cv.llr(x, y, w)
 h_kdexact <- cv.llr(x, y, w, kdtree = TRUE, approx = FALSE)
 ## Bandwidth selection of approx local linear regression with kdtree
 h_kdapprox <- cv.llr(x, y, w , kdtree = TRUE , approx = TRUE)
+```
+
+5. Autoloocv selection 
+
+```
+## Bandwidth selection using auto exact
+h_auto <- autoloocv.llr(x, y, w)
+
+## Bandwdith 
+h_auto <- autoloocv.llr(x, y, w, approx = TRUE) 
 ```
 # Visual Results (Red stand for bandwidth chosen with cv (approx), Yellow stand for bandwidth chosen gcv(exact), Blue stand for bandwidth chosen with gcv(approx)).
 x1 ~ N(0,0.3)  
