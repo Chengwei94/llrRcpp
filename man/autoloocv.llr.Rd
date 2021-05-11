@@ -9,10 +9,10 @@ autoloocv.llr(
   y,
   weight,
   kernel = "epanechnikov",
-  bw_range = c(0.01, 0.5),
+  bw_range = "auto",
   approx = FALSE,
   epsilon = 0.05,
-  control = list(numPopulation = 15, maxIter = 75, Vmax = 2, ci = 1.49445, cg =
+  control = list(numPopulation = "auto", maxIter = "auto", Vmax = 2, ci = 1.49445, cg =
     1.49445, w = 0.729),
   algorithm = "PSO",
   seed = 1

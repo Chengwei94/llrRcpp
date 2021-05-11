@@ -29,6 +29,10 @@ tgcv_cpp <- function(X, Y, wt, method, kcode, epsilon, bw, N_min) {
     .Call(`_llrRcpp_tgcv_cpp`, X, Y, wt, method, kcode, epsilon, bw, N_min)
 }
 
+approx_gcv_cpp <- function(X, Y, wt, method, kcode, epsilon, bw, N_min) {
+    .Call(`_llrRcpp_approx_gcv_cpp`, X, Y, wt, method, kcode, epsilon, bw, N_min)
+}
+
 #' Get number of processors
 #' @return number of processors 
 #' @export

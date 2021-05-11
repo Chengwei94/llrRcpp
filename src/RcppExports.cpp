@@ -119,6 +119,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// approx_gcv_cpp
+Rcpp::List approx_gcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode, double epsilon, const Eigen::MatrixXd& bw, int N_min);
+RcppExport SEXP _llrRcpp_approx_gcv_cpp(SEXP XSEXP, SEXP YSEXP, SEXP wtSEXP, SEXP methodSEXP, SEXP kcodeSEXP, SEXP epsilonSEXP, SEXP bwSEXP, SEXP N_minSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type X(XSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const Eigen::VectorXd& >::type wt(wtSEXP);
+    Rcpp::traits::input_parameter< int >::type method(methodSEXP);
+    Rcpp::traits::input_parameter< int >::type kcode(kcodeSEXP);
+    Rcpp::traits::input_parameter< double >::type epsilon(epsilonSEXP);
+    Rcpp::traits::input_parameter< const Eigen::MatrixXd& >::type bw(bwSEXP);
+    Rcpp::traits::input_parameter< int >::type N_min(N_minSEXP);
+    rcpp_result_gen = Rcpp::wrap(approx_gcv_cpp(X, Y, wt, method, kcode, epsilon, bw, N_min));
+    return rcpp_result_gen;
+END_RCPP
+}
 // get_num_procs
 int get_num_procs();
 RcppExport SEXP _llrRcpp_get_num_procs() {
@@ -149,6 +167,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_llrRcpp_bin2d_cpp", (DL_FUNC) &_llrRcpp_bin2d_cpp, 4},
     {"_llrRcpp_llrt_cpp", (DL_FUNC) &_llrRcpp_llrt_cpp, 9},
     {"_llrRcpp_tgcv_cpp", (DL_FUNC) &_llrRcpp_tgcv_cpp, 8},
+    {"_llrRcpp_approx_gcv_cpp", (DL_FUNC) &_llrRcpp_approx_gcv_cpp, 8},
     {"_llrRcpp_get_num_procs", (DL_FUNC) &_llrRcpp_get_num_procs, 0},
     {"_llrRcpp_set_num_threads", (DL_FUNC) &_llrRcpp_set_num_threads, 1},
     {NULL, NULL, 0}

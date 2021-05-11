@@ -22,20 +22,32 @@
 #' h <- autoloocv.llr(x, y, w, control = control , algorithm = algorithm)
 #' }
 #' @export
-autoloocv.llr <- function(x, y, weight, kernel = "epanechnikov", bw_range = c(0.01, 0.5), approx = FALSE, epsilon = 0.05,
-                       control = list(numPopulation=15, maxIter=75, Vmax=2, ci=1.49445, cg=1.49445, w=0.729), 
+autoloocv.llr <- function(x, y, weight, kernel = "epanechnikov", bw_range = 'auto', approx = FALSE, epsilon = 0.05,
+                       control = list(numPopulation='auto', maxIter='auto', Vmax=2, ci=1.49445, cg=1.49445, w=0.729), 
                        algorithm = "PSO", seed = 1) {
-
+  
   x <- as.matrix(x)
   y <- as.numeric(y)
   weight <- as.numeric(weight)
+  
+  if (bw_range == 'auto'){
+    max <- (nrow(x)^(1/ncol(x)))^(-1/5) + 0.05
+    min <- 0.001
+    bw_range <- c(min, max)
+  }
+  
+  if(control$numPopulation == 'auto'){
+    control$numPopulation = 8 + round(2.5 ^ ncol(x))
+  }
+  if (control$maxIter == 'auto'){
+    control$maxIter = 8 + 4 ^ ncol(x)
+  }
     
   loss_function <- function(h) {
     loss <- loocv.llr_nowarn(x, y, weight = weight, bandwidth = h, approx = approx, epsilon = epsilon)
     return (loss$SSE)
   }
-  
-  control <- control
+
   numvar <- ncol(x)
   rangevar <- matrix(bw_range, nrow =2)
   

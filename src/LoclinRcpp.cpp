@@ -223,7 +223,6 @@ std::pair<double,double> calculate_weight(int kcode, const Eigen::VectorXd& X_qu
       w_min *= eval_kernel(kcode, dis_max/h(i)) / h(i);    
       w_max *= eval_kernel(kcode, dis_min/h(i)) / h(i);
     }
-    
     else{
       double dist1 = abs(X_query(i) - dim_min.at(i));
       double dist2 = abs(X_query(i) - dim_max.at(i));
@@ -252,9 +251,11 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
   w_maxmin = calculate_weight(kcode, X_query, dim_max, dim_min, h);
   double w_max = w_maxmin.first; 
   double w_min = w_maxmin.second;
+  double count; 
   
   while (w_max != w_min || storage.empty() == false){
     while (w_max != w_min ){   
+      count += 1; 
       storage.push(curr);
       curr = curr->left_child.get();  
       w_maxmin = calculate_weight(kcode, X_query, curr->dim_max, curr->dim_min, h);   
@@ -266,7 +267,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
         XtY += w_max*curr->XtY; 
       }           
     }
-    
+    count += 1; 
     curr = storage.top();
     storage.pop(); 
     curr = curr->right_child.get(); 
@@ -278,6 +279,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::get_XtXXtY(const Eigen::Vect
       XtY += w_max*curr->XtY;
     }
   }   
+  // Rcpp::Rcout << count <<'\n';
   return std::make_pair(XtX,XtY); 
 }
 
@@ -301,9 +303,11 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen
   double w_min = w_maxmin.second;
   
   double weight_sf = 0; 
+  double count = 0;
   
   while ((w_max-w_min > 2*epsilon*(weight_sf + curr->n_below*w_min)) || storage.empty() == false  ){
     while (w_max - w_min > 2*epsilon*(weight_sf + curr->n_below*w_min)){   // if condition fufilled        
+      count += 1;
       storage.push(curr);
       curr = curr->left_child.get();  
       w_maxmin = calculate_weight(kcode, X_query, curr->dim_max, curr->dim_min, h);  // calculate max and min weight 
@@ -312,11 +316,13 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen
       
       if(w_max - w_min <= 2 * epsilon * (weight_sf + curr->n_below*w_min)){ 
         double weight = 0.5*(w_max + w_min);
-        weight_sf += weight;  
+        //weight_sf += weight;  
         XtX += weight * curr->XtX;
         XtY += weight * curr->XtY; 
       }           
     }
+    
+    count += 1;
     curr = storage.top(); 
     storage.pop(); 
     curr = curr->right_child.get(); 
@@ -326,11 +332,12 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXd> kdtree::getapprox_XtXXtY(const Eigen
     
     if(w_max - w_min <= 2 * epsilon * (weight_sf + curr->n_below*w_min)){ 
       double weight = 0.5*(w_max + w_min);
-      weight_sf += weight;  
+      //weight_sf += weight;  
       XtX += weight * curr->XtX;
       XtY += weight * curr->XtY; 
     }          
   }
+  // Rcpp::Rcout << count <<'\n';
   return std::make_pair(XtX,XtY); 
 }
 
@@ -660,6 +667,71 @@ Rcpp::List tgcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Ei
       SSEs(i) = SSE;
     }
     
+    if (SSE_opt == -1 && bwerror == false){
+      SSE_opt = SSE;
+      bw_opt = h;
+    }
+    else if (SSE <= SSE_opt && bwerror == false) {
+      SSE_opt = SSE;
+      bw_opt = h;
+    }
+  }
+  return Rcpp::List::create(Rcpp::Named("bw_opt") = bw_opt, 
+                            Rcpp::Named("SSE") = SSEs);
+}
+
+
+// [[Rcpp::export]]
+Rcpp::List approx_gcv_cpp(const Eigen::MatrixXd& X, const Eigen::VectorXd& Y, const Eigen::VectorXd& wt, int method, int kcode,
+                    double epsilon, const Eigen::MatrixXd& bw, int N_min){
+  
+  int n = X.rows();
+  Eigen::VectorXd bw_opt = Eigen::VectorXd::Zero(bw.cols());
+  Eigen::MatrixXd I = Eigen::MatrixXd::Identity(X.cols()+1, X.cols()+1);
+  Eigen::VectorXd SSE_clipped(n);
+  Eigen::VectorXd SSEs(bw.rows());
+  int cutoff = n * 0.95; 
+  std::vector<std::pair<double, double>> w_SSE(n); 
+  
+  kdtree tree(X, Y, wt, N_min);
+  double SSE_opt = -1;
+  
+  for (int i = 0; i< bw.rows(); i++) {            //calculating SSE for subsequent bandwidth
+    Eigen::VectorXd h = bw.row(i);
+    double SSE = 0;
+    bool bwerror = false;
+    
+    #pragma omp parallel for reduction(+:SSE) schedule(static)
+    for (int j = 0; j < n; j++) {
+      double w = max_weight(kcode, h, wt(j)); 
+      std::pair<Eigen::MatrixXd, Eigen::VectorXd> XtXXtY = tree.find_XtXXtY(X.row(j), method, epsilon, h, kcode);
+      double beta_0 = calculate_beta(XtXXtY.first, XtXXtY.second);
+      Eigen::MatrixXd XtX = XtXXtY.first;
+      Eigen::MatrixXd XtXi = XtX.ldlt().solve(I);
+      double w_point = w * XtXi(0,0);
+      //   Rcpp::Rcout << w_point << '\n';
+      if (w_point == 1 || beta_0 == R_PosInf){
+        bwerror = true; 
+      } 
+      // double SSE = pow((beta_0 - Y(j))/(1-w_point), 2);
+      // SSE_clipped(j) = SSE;
+      w_SSE[j].first = w_point;
+      w_SSE[j].second = beta_0-Y(j);
+    }
+    if (bwerror == true){
+      SSEs(i) = R_PosInf;
+    }
+    else { 
+//    std::nth_element(SSE_clipped.data(), SSE_clipped.data()+cutoff, SSE_clipped.data()+n);
+      std::sort(w_SSE.begin(), w_SSE.end(), [](auto &left, auto &right) {
+      return left.second < right.second;
+      });
+      for (int k = 0; k < cutoff; k++ ){
+//    SSE_tot += SSE_clipped(k);
+      SSE += pow(w_SSE[k].second/(1-w_SSE[k].first), 2);
+        }
+      SSEs(i) = SSE;
+    }
     if (SSE_opt == -1 && bwerror == false){
       SSE_opt = SSE;
       bw_opt = h;

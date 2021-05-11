@@ -101,7 +101,7 @@ loocv.llr <- function(x, y, weight, kernel = "epanechnikov", approx = FALSE, eps
     results <- tgcv_cpp(x, y, wt, 1, kcode, epsilon, bandwidth1, N_min)
   }
   else {
-    results <- tgcv_cpp(x, y, wt, 2, kcode, epsilon, bandwidth1, N_min)
+    results <- approx_gcv_cpp(x, y, wt, 2, kcode, epsilon, bandwidth1, N_min)
   }
   
    results$bw_opt <- results$bw_opt / scale
